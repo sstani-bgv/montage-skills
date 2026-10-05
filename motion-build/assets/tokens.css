@@ -1,0 +1,58 @@
+/* Дизайн-система канала v3.0 — токены */
+@import url("./fonts/fonts.css");
+
+:root {
+  /* Нейтрали */
+  --paper: #f6f7f9;      /* фон */
+  --surface: #ffffff;    /* карточки */
+  --surface-2: #edeff3;  /* панели */
+  --ink: #14161a;        /* текст */
+  --muted: #61666f;
+  --faint: #9aa0a9;
+  --line: #e2e5ea;
+  --line-2: #cfd4dc;
+
+  /* Акценты */
+  --blue: #2e58ea;       /* бренд-акцент, по умолчанию */
+  --blue-700: #2243c2;
+  --blue-100: #e8ecfd;
+  --coral: #f0584e;      /* боль / срочность */
+  --coral-100: #fce4e1;
+  --mark: #ffe04a;       /* highlighter за словом */
+
+  /* Стекло (только поверх видео) */
+  --glass: rgba(255, 255, 255, 0.42);
+  --glass-dark: rgba(20, 22, 26, 0.34);
+  --glass-line: rgba(255, 255, 255, 0.68);
+  --glass-blur: blur(20px) saturate(170%);
+  --glass-shadow: 0 10px 30px rgba(20, 22, 26, 0.16),
+    inset 0 1px 0 rgba(255, 255, 255, 0.75);
+
+  --shadow: 0 1px 2px rgba(20, 22, 26, 0.05), 0 8px 24px rgba(20, 22, 26, 0.06);
+
+  /* Радиусы */
+  --r-chip: 30px;
+  --r-sm: 10px;
+  --r-md: 14px;
+  --r-lg: 18px;
+  --r-xl: 22px;
+
+  /* Шрифты */
+  --font-display: "Unbounded", sans-serif; /* только крупный кегль */
+  --font-body: "Onest", sans-serif;
+}
+
+/* Типографическая шкала (16:9, 1920×1080 — ×1.0 от макета 1920) */
+.t-cover   { font-family: var(--font-display); font-weight: 700; font-size: 70px;  letter-spacing: -0.03em; }
+.t-h1      { font-family: var(--font-body);    font-weight: 800; font-size: 54px;  letter-spacing: -0.025em; }
+.t-h2      { font-family: var(--font-body);    font-weight: 700; font-size: 38px;  letter-spacing: -0.02em; }
+.t-body    { font-family: var(--font-body);    font-weight: 400; font-size: 24px;  letter-spacing: -0.01em; }
+.t-kicker  { font-family: var(--font-body);    font-weight: 700; font-size: 15px;  letter-spacing: 0.14em; text-transform: uppercase; }
+
+/* Сетка-миллиметровка внутри схем */
+.grid-paper {
+  background-image:
+    linear-gradient(rgba(20,22,26,.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(20,22,26,.045) 1px, transparent 1px);
+  background-size: 24px 24px;
+}

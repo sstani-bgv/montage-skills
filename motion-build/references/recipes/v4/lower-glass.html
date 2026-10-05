@@ -1,0 +1,42 @@
+<!-- dur=15.4 | стрим 20:45.1–21:00.5 | Кэш: в том же чате — меньше токенов (lower вместо split-cam) -->
+<style>
+.full { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; }
+.full video { width: 100%; height: 100%; display: block; }
+.glass { position: absolute; left: 590px; top: 718px; width: 1200px; height: 290px; border-radius: 24px;
+  background: rgba(255,255,255,.78); backdrop-filter: blur(20px) saturate(170%); -webkit-backdrop-filter: blur(20px) saturate(170%);
+  border: 1px solid rgba(255,255,255,.85); box-shadow: 0 2px 6px rgba(20,22,26,.10), 0 18px 44px rgba(20,22,26,.26), inset 0 1px 0 rgba(255,255,255,.75); overflow: hidden; }
+#hero { left: 12px; top: 8px; width: 274px; height: 274px; }
+.glass .kicker { left: 304px; top: 44px; font-size: 20px; }
+.glass .h1 { left: 304px; top: 92px; width: 890px; font-size: 68px; }
+.glass .h1.l2 { top: 180px; font-size: 52px; font-weight: 700; letter-spacing: -.025em; color: var(--ink); }
+.mkw { position: relative; }
+
+.mkw b { position: relative; font-weight: inherit; }
+#mem { left: 40px; top: 214px; font-size: 26px; padding: 8px 18px; gap: 10px; }
+#mem i { background: var(--blue); width: 12px; height: 12px; }
+</style>
+<body>
+<div class="full"><video id="scrv" class="clip" src="./assets/clips/scr_19.mp4" data-start="0" data-duration="15.4" data-track-index="0" muted playsinline></video></div>
+<div class="glass" id="glass">
+  <div class="hero" id="hero"><div class="hero-in"><img src="./assets/hero.png" alt="" /></div></div>
+  <div class="chip" id="mem"><i></i><span class="lbl">уже в памяти</span></div>
+  <div class="kicker"><i></i>Что такое кэш</div>
+  <div class="h1" id="l1"><span class="w">Нейронка</span> <span class="w">помнит</span> <span class="w">чат</span></div>
+  <div class="h1 l2" id="l2"><span class="w">В</span> <span class="w">том</span> <span class="w">же</span> <span class="w">чате</span> <span class="w">—</span> <span class="w acc">меньше</span> <span class="w acc">токенов</span></div>
+</div>
+</body>
+<script>
+// живой экран не участвует в сквозном наезде #stage — рез обратно в стрим бесшовный
+gsap.set(".full", { transformOrigin: "50% 50%" });
+tl.to(".full", { scale: 1 / 1.035, duration: DUR, ease: "none" }, 0);
+// кадр 0: плашка уже въезжает снизу
+gsap.set("#glass", { opacity: 0.35, y: 60, filter: "blur(6px)" });
+tl.to("#glass", { keyframes: [ { opacity: 1, y: 6, filter: "blur(0px)", duration: 0.45, ease: "expo.out" }, { y: 0, duration: 0.75, ease: "none" } ] }, 0);
+heroIn("#hero", 0.1);
+rise("#l1 .w", 1.6, 0.14);
+rise("#l2 .w:not(.acc)", 7.1, 0.12);
+rise("#l2 .acc", 9.45, 0.14);
+chipIn("#mem", 11.0, 20);
+// уход вниз-вправо, не тем же путём
+tl.to("#glass", { opacity: 0, x: 60, y: 40, duration: 0.4, ease: "power2.in" }, 14.95);
+</script>

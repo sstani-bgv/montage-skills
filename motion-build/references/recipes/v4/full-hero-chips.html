@@ -1,0 +1,42 @@
+<!-- dur=10 | стрим 01:58.8–02:08.8 | «фронтенд — лицевая часть, бэкенд — задняя» -->
+<body>
+<div class="hero" id="hero"><div class="hero-in"><img src="./assets/hero.png" alt="" /></div></div>
+<div class="kicker"><i></i>Как устроен любой сайт</div>
+<div class="h1" id="l1" style="top:250px"><span class="w">Фронтенд —</span><br><span class="w a1">лицевая</span> <span class="w a1">часть</span></div>
+<div class="h1" id="l2" style="top:520px"><span class="w">Бэкенд —</span><br><span class="w a2">задняя</span> <span class="w a2">часть</span></div>
+<div class="sub" id="sub" style="top:810px"><span class="w">всё,</span> <span class="w">что</span> <span class="w">вы</span> <span class="w">видите</span> <span class="w">на</span> <span class="w">сайте —</span> <span class="w">фронтенд</span></div>
+<div class="chip" id="cf" style="left:950px; top:250px"><div class="chip-on"></div><i></i><span class="lbl">Фронтенд</span></div>
+<div class="chip" id="cb" style="left:1450px; top:175px"><div class="chip-on"></div><i></i><span class="lbl">Бэкенд</span></div>
+</body>
+<script>
+// акцент — только на том, о чём говорим сейчас
+function chipState(id, on, t) {
+  tl.to(`#${id} .chip-on`, { opacity: on ? 1 : 0, duration: 0.25, ease: "power2.out" }, t);
+  tl.to(`#${id} .lbl`, { color: on ? "#ffffff" : "#14161a", duration: 0.25 }, t);
+  tl.to(`#${id} i`, { backgroundColor: on ? "#ffffff" : "#cfd4dc", duration: 0.25 }, t);
+}
+gsap.set(".chip-on", { opacity: 0 });
+gsap.set(".a1", { color: "#2e58ea" });
+gsap.set(".a2", { color: "#14161a" });
+
+heroIn("#hero", 0);
+rise("#l1 .w:not(.a1)", 0.05);
+rise("#l1 .a1", 1.2, 0.15);
+chipIn("#cf", 0.35);
+chipState("cf", true, 0.35);
+
+// 2.75 — «бэкенд»: акцент переезжает
+tl.to(".a1", { color: "#14161a", duration: 0.3 }, 2.75);
+chipState("cf", false, 2.75);
+rise("#l2 .w:not(.a2)", 2.75);
+chipIn("#cb", 2.8);
+chipState("cb", true, 2.8);
+tl.to(".a2", { color: "#2e58ea", duration: 0.01 }, 4.2);
+rise("#l2 .a2", 4.2, 0.15);
+
+// 5.0 — «фронтенд — это вот эти все сайты»
+rise("#sub .w", 5.0, 0.1);
+chipState("cb", false, 5.0);
+chipState("cf", true, 5.0);
+tl.to(".a2", { color: "#14161a", duration: 0.3 }, 5.0);
+</script>

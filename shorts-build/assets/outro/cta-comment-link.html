@@ -1,0 +1,70 @@
+<!-- dur=5.2 | концовка шортса | пиши в комментариях «второй мозг» — пришлю ссылку на полное видео -->
+<style>
+.top { position: absolute; left: 70px; top: 470px; width: 940px; }
+.kicker { top: 400px !important; left: 76px !important; }
+.big { font-weight: 800; font-size: 104px; line-height: .98; letter-spacing: -.02em; text-transform: uppercase; color: var(--ink); }
+.big .ln { display: block; white-space: nowrap; }
+.cm { position: absolute; left: 60px; top: 790px; width: 960px; background: #fff; border-radius: 34px;
+  box-shadow: 0 24px 60px rgba(20,30,60,.12), 0 2px 6px rgba(20,30,60,.06); padding: 38px 40px; }
+.row { display: flex; align-items: center; gap: 26px; }
+.av { width: 84px; height: 84px; border-radius: 50%; flex: none; background: linear-gradient(135deg,#b9c6ff,#6f8cff); }
+.av.me { background: linear-gradient(135deg,#2E58EA,#1b3bb5); color:#fff; font-weight:800; font-size:40px; display:flex; align-items:center; justify-content:center; }
+.inp { flex: 1; height: 96px; border-bottom: 4px solid #d9dee8; display: flex; align-items: center; font-size: 60px; font-weight: 700; color: var(--ink); position: relative; }
+.inp .ph { color: #a3aab8; font-weight: 500; font-size: 44px; position: absolute; left: 0; }
+.inp .typed { color: var(--blue, #2E58EA); white-space: pre; }
+.caret { display: inline-block; width: 5px; height: 58px; background: var(--ink); margin-left: 4px; vertical-align: middle; }
+.send { width: 96px; height: 96px; border-radius: 50%; background: #2E58EA; flex: none; display: flex; align-items: center; justify-content: center; }
+.send svg { width: 46px; height: 46px; }
+.rep { position: absolute; left: 60px; top: 1060px; width: 960px; }
+.bub { background: #fff; border-radius: 34px; padding: 30px 36px; box-shadow: 0 24px 60px rgba(20,30,60,.12);
+  display: flex; gap: 26px; align-items: flex-start; }
+.bub .name { font-size: 36px; font-weight: 700; color: var(--muted); margin-bottom: 8px; }
+.bub .msg { font-size: 52px; font-weight: 700; color: var(--ink); }
+.link { margin-top: 20px; display: flex; align-items: center; gap: 22px; background: #eef2ff; border: 3px solid #2E58EA;
+  border-radius: 24px; padding: 20px 24px; }
+.play { width: 110px; height: 72px; border-radius: 14px; background: #2E58EA; flex: none; display:flex; align-items:center; justify-content:center; }
+.play svg { width: 34px; height: 34px; }
+.link .t1 { font-size: 48px; font-weight: 800; color: #2E58EA; line-height: 1.05; }
+.link .t2 { font-size: 34px; font-weight: 600; color: var(--muted); margin-top: 6px; }
+.ring { position: absolute; border: 5px solid #2E58EA; border-radius: 30px; inset: -10px; opacity: 0; }
+</style>
+<body>
+<div class="kicker"><i></i>ПОЛНОЕ ВИДЕО</div>
+<div class="top big" id="t1"><span class="ln">пиши в</span><span class="ln acc">комментариях</span></div>
+<div class="cm" id="cm"><div class="row">
+  <div class="av"></div>
+  <div class="inp"><span class="ph" id="ph">Добавьте комментарий…</span><span class="typed" id="typed"></span><span class="caret" id="caret"></span></div>
+  <div class="send" id="send"><svg viewBox="0 0 24 24"><path d="M3 12l18-9-6 18-3-7-9-2z" fill="#fff"/></svg></div>
+</div></div>
+<div class="rep" id="rep"><div class="bub">
+  <div class="av me">С</div>
+  <div style="flex:1">
+    <div class="name">Имя · автор</div>
+    <div class="msg">Держи ссылку 👇</div>
+    <div class="link" id="link" style="position:relative"><div class="play"><svg viewBox="0 0 24 24"><path d="M7 4l14 8-14 8z" fill="#fff"/></svg></div>
+      <div><div class="t1">Второй мозг на ИИ</div><div class="t2">полное видео · 27 мин</div></div><div class="ring" id="ring"></div></div>
+  </div>
+</div></div>
+</body>
+<script>
+rise("#t1 .ln", 0.0, 0.18, 0.45);
+chipIn("#cm", 0.85, 60);
+// набор «второй мозг» по голосу 1.27–2.08
+const word = "второй мозг"; const tp = document.getElementById("typed");
+const o = { n: 0 };
+tp.textContent = "";
+gsap.set("#ph", { opacity: 1 });
+tl.to("#ph", { opacity: 0, duration: 0.1 }, 1.18);
+tl.to(o, { n: word.length, duration: 0.8, ease: "none", onUpdate: () => { tp.textContent = word.slice(0, Math.round(o.n)); } }, 1.2);
+gsap.set("#caret", { opacity: 1 });
+[0.4, 0.8].forEach(t => { tl.set("#caret", { opacity: 0 }, t); tl.set("#caret", { opacity: 1 }, t + 0.2); });
+tl.set("#caret", { opacity: 0 }, 2.2);
+// отправка 2.15
+tl.to("#send", { scale: 0.86, duration: 0.08 }, 2.12).to("#send", { scale: 1, duration: 0.25, ease: "back.out(3)" }, 2.2);
+// ответ со ссылкой: «отправлю тебе ссылку» 2.22–3.6
+chipIn("#rep", 2.35, 80);
+chipIn("#link", 3.05, 30);
+tl.fromTo("#ring", { opacity: 0.9, scale: 1 }, { opacity: 0, scale: 1.08, duration: 0.7, ease: "power2.out" }, 3.2);
+tl.fromTo("#ring", { opacity: 0.9, scale: 1 }, { opacity: 0, scale: 1.08, duration: 0.7, ease: "power2.out" }, 4.1);
+tl.to("#link", { scale: 1.04, duration: 0.18, yoyo: true, repeat: 1, ease: "power2.out" }, 4.15);
+</script>

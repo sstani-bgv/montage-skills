@@ -1,0 +1,313 @@
+<!doctype html>
+<html lang="ru" data-resolution="landscape">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920, height=1080" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <link rel="stylesheet" href="./assets/tokens.css" />
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body { width: 1920px; height: 1080px; overflow: hidden; background: var(--paper); }
+      body { font-family: var(--font-body); color: var(--ink); }
+
+      /* [0] фон */
+      #bg { position: absolute; inset: 0; background: var(--paper); }
+      #bg .blob {
+        position: absolute; border-radius: 50%;
+        background: radial-gradient(closest-side, var(--blue-100), rgba(232, 236, 253, 0));
+      }
+      #bg .blob-a { left: 420px; top: -260px; width: 1300px; height: 1000px; }
+      #bg .blob-b { left: 1180px; top: 420px; width: 1100px; height: 900px; opacity: .7; }
+
+      /* сцена / рельс */
+      #stage { position: absolute; inset: 0; overflow: hidden; }
+      #drift { position: absolute; inset: 0; }
+      #rail  { position: absolute; left: 0; top: 158px; display: flex; gap: 70px; }
+
+      .slot {
+        width: 660px;
+        transform-origin: 50% 290px;
+        will-change: transform, filter, opacity;
+      }
+
+      .card {
+        position: relative;
+        width: 660px; height: 580px;
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: 26px;
+        box-shadow: var(--shadow);
+        padding: 52px;
+        display: flex; flex-direction: column;
+      }
+      .card .kicker {
+        font-family: var(--font-body); font-weight: 700; font-size: 15px;
+        letter-spacing: .14em; text-transform: uppercase; color: var(--muted);
+      }
+      .card .num {
+        font-family: var(--font-display); font-weight: 700; font-size: 150px;
+        letter-spacing: -.03em; line-height: 1.02; margin-top: 14px; color: #7b828d;
+      }
+      .card .spacer { flex: 1 1 auto; }
+      .card .rule { height: 1px; background: var(--line); margin-bottom: 26px; }
+      .card .title {
+        font-family: var(--font-body); font-weight: 800; font-size: 54px;
+        letter-spacing: -.025em; line-height: 1.05; color: var(--ink);
+      }
+      .card .sub {
+        font-family: var(--font-body); font-weight: 400; font-size: 24px;
+        letter-spacing: -.01em; margin-top: 16px; color: var(--muted);
+      }
+      .card .w { display: inline-block; }
+      .card .mark {
+        position: absolute; right: 52px; top: 232px;
+        width: 122px; height: 122px; color: #cfd4dc;
+      }
+      .card .mark svg { display: block; width: 122px; height: 122px; }
+
+      /* [1] отражение */
+      .refl {
+        width: 660px; height: 232px; margin-top: 14px; overflow: hidden; opacity: .46;
+        -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,.30), rgba(0,0,0,0) 37%);
+        mask-image: linear-gradient(to bottom, rgba(0,0,0,.30), rgba(0,0,0,0) 37%);
+      }
+      .refl-inner { transform: scaleY(-1) translateY(-100%); transform-origin: top center; }
+
+      /* [4] chapter chip */
+      #chip {
+        position: absolute; left: 0; right: 0; top: 56px;
+        display: flex; justify-content: center;
+      }
+      #chip .chip-pill {
+        display: inline-flex; align-items: center; gap: 12px;
+        padding: 14px 28px; border-radius: var(--r-chip);
+        background: var(--surface); border: 1px solid var(--line);
+        box-shadow: var(--shadow);
+        font-family: var(--font-body); font-weight: 700; font-size: 15px;
+        letter-spacing: .14em; text-transform: uppercase; color: var(--ink);
+      }
+      #chip .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--blue); }
+      #chip .label { display: inline-block; }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-duration="4.5"
+         data-width="1920" data-height="1080">
+
+      <div id="bg" class="clip" data-start="0" data-duration="4.5" data-track-index="0" data-layout-allow-overflow>
+        <div class="blob blob-a"></div>
+        <div class="blob blob-b"></div>
+      </div>
+
+      <div id="stage" class="clip" data-start="0" data-duration="4.5" data-track-index="1" data-layout-allow-overflow>
+        <div id="drift"><div id="rail" data-layout-ignore></div></div>
+      </div>
+
+      <div id="chip" class="clip" data-start="0" data-duration="4.5" data-track-index="2">
+        <div class="chip-pill"><span class="dot"></span><span class="label">Метод из 3 слоёв</span></div>
+      </div>
+    </div>
+
+    <script>
+      /* ---------- геометрия рельса (константы, считаются один раз) ---------- */
+      var CARD_W = 660, GAP = 70, PITCH = CARD_W + GAP;   // 730
+      var CENTER = 960;
+      var DRIFT_RATE = 78;                                 // px/сек, ease none
+      var DUR = 4.5;
+
+      /* Рельс-карусель: [04'] 01 02 03 04 [01'] — края всегда заполнены */
+      /* Монолинейные метки (2px, круг/квадрат/ромб/кольцо) */
+      var MARKS = {
+        "01": '<rect x="14" y="14" width="76" height="76" rx="6" fill="none" stroke="currentColor" stroke-width="2"/>',
+        "02": '<circle cx="52" cy="52" r="38" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="52" cy="52" r="16" fill="none" stroke="currentColor" stroke-width="2"/>',
+        "03": '<path d="M52 10L94 52L52 94L10 52Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>',
+        "04": '<path d="M52 10C52 33 71 52 94 52C71 52 52 71 52 94C52 71 33 52 10 52C33 52 52 33 52 10Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>'
+      };
+
+      var CHAPTERS = [
+        { n: "04", t: "Метод",       s: "Начни собирать" },
+        { n: "01", t: "Спека",       s: "Как передать AI понимание" },
+        { n: "02", t: "Верификатор", s: "Единственный рычаг" },
+        { n: "03", t: "Среда",       s: "CLAUDE.md и скилы" },
+        { n: "04", t: "Метод",       s: "Начни собирать" },
+        { n: "01", t: "Спека",       s: "Как передать AI понимание" }
+      ];
+
+      /* Состояние карточки как функция расстояния до центра */
+      var BY_DIST = [
+        { scale: 1,    opacity: 1,   blur: 0,  z: 3 },
+        { scale: 0.78, opacity: 0.45, blur: 6,  z: 2 },
+        { scale: 0.66, opacity: 0.25, blur: 10, z: 2 },
+        { scale: 0.60, opacity: 0.16, blur: 13, z: 2 }
+      ];
+      function stateFor(i, active) {
+        var d = Math.abs(i - active);
+        return BY_DIST[d > 3 ? 3 : d];
+      }
+
+      var CARD_OFF = { bg: "#ffffff", title: "#14161a", sub: "#61666f", num: "#7b828d", line: "#e2e5ea", kicker: "#61666f", mark: "#cfd4dc" };
+      /* Непрозрачные значения (не rgba): альфа поверх синего давала тёплую середину при твине */
+      var CARD_ON  = { bg: "#2e58ea", title: "#ffffff", sub: "#e6ebfc", num: "#a1b4f5", line: "#6d8af0", kicker: "#d1dafa", mark: "#829bf2" };
+      function paletteFor(i, active) { return i === active ? CARD_ON : CARD_OFF; }
+
+      /* Активная карточка по эпохам: индексы 2 → 3 → 4 */
+      var EPOCHS = [
+        { active: 2, at: 0,   dur: 0 },
+        { active: 3, at: 1.2, dur: 0.9 },
+        { active: 4, at: 3.0, dur: 0.9 }
+      ];
+      /* Слова, собирающиеся пословесно (индекс слота → момент старта) */
+      var WORD_IN = { 3: 1.55, 4: 3.35 };
+
+      /* ---------- разметка ---------- */
+      function buildCard(ch, slotIndex) {
+        var el = document.createElement("div");
+        el.className = "card";
+        var words = ch.s.split(" ").map(function (w) {
+          return '<span class="w">' + w + "</span>";
+        }).join(" ");
+        el.innerHTML =
+          '<div class="mark"><svg viewBox="0 0 104 104" aria-hidden="true">' + MARKS[ch.n] + "</svg></div>" +
+          '<div class="kicker">Часть</div>' +
+          '<div class="num">' + ch.n + "</div>" +
+          '<div class="spacer"></div>' +
+          '<div class="rule"></div>' +
+          '<div class="title">' + ch.t + "</div>" +
+          '<div class="sub">' + words + "</div>";
+        return el;
+      }
+
+      var rail = document.getElementById("rail");
+      var slots = [];
+      for (var i = 0; i < CHAPTERS.length; i++) {
+        var slot = document.createElement("div");
+        slot.className = "slot";
+        slot.setAttribute("data-slot", String(i));
+        slot.appendChild(buildCard(CHAPTERS[i], i));
+        var refl = document.createElement("div");
+        refl.className = "refl";
+        var inner = document.createElement("div");
+        inner.className = "refl-inner";
+        inner.appendChild(buildCard(CHAPTERS[i], i));
+        refl.appendChild(inner);
+        slot.appendChild(refl);
+        rail.appendChild(slot);
+        slots.push(slot);
+      }
+
+      function q(sel) { return Array.prototype.slice.call(document.querySelectorAll(sel)); }
+      function slotParts(i) {
+        var root = '.slot[data-slot="' + i + '"] ';
+        return {
+          cards: q(root + ".card"),
+          titles: q(root + ".title"),
+          subs: q(root + ".sub"),
+          nums: q(root + ".num"),
+          rules: q(root + ".rule"),
+          kickers: q(root + ".kicker"),
+          marks: q(root + ".mark"),
+          words: q(root + ".sub .w")
+        };
+      }
+
+      /* Позиция рельса: активный слот ровно по центру в конце перехода,
+         дрейф компенсируется, дальше карточка «утекает» влево. */
+      function railX(active, tEnd) {
+        return CENTER - (active * PITCH + CARD_W / 2) + DRIFT_RATE * tEnd;
+      }
+
+      /* ---------- единый paused-таймлайн ---------- */
+      var tl = gsap.timeline({ paused: true });
+
+      /* [0] дрейф — постоянная скорость */
+      tl.set("#drift", { x: 0 }, 0);
+      tl.to("#drift", { x: -DRIFT_RATE * DUR, duration: DUR, ease: "none" }, 0);
+
+      /* рельс: перецентровка на новую активную карточку */
+      tl.set("#rail", { x: railX(EPOCHS[0].active, 0) }, 0);
+      for (var e = 1; e < EPOCHS.length; e++) {
+        var ep = EPOCHS[e];
+        tl.to("#rail", {
+          x: railX(ep.active, ep.at + ep.dur),
+          duration: ep.dur,
+          ease: "power4.inOut"
+        }, ep.at);
+      }
+
+      /* per-card: заранее рассчитанные keyframes (scale / opacity / blur / палитра) */
+      for (var s = 0; s < slots.length; s++) {
+        var parts = slotParts(s);
+        var st0 = stateFor(s, EPOCHS[0].active);
+        var p0 = paletteFor(s, EPOCHS[0].active);
+
+        tl.set(slots[s], {
+          scale: st0.scale,
+          opacity: st0.opacity,
+          filter: "blur(" + st0.blur + "px)",
+          zIndex: st0.z
+        }, 0);
+        tl.set(parts.cards, { backgroundColor: p0.bg, borderColor: p0.line }, 0);
+        tl.set(parts.titles, { color: p0.title }, 0);
+        tl.set(parts.subs, { color: p0.sub }, 0);
+        tl.set(parts.nums, { color: p0.num }, 0);
+        tl.set(parts.rules, { backgroundColor: p0.line }, 0);
+        tl.set(parts.kickers, { color: p0.kicker }, 0);
+        tl.set(parts.marks, { color: p0.mark }, 0);
+
+        for (var k = 1; k < EPOCHS.length; k++) {
+          var epk = EPOCHS[k];
+          var prev = stateFor(s, EPOCHS[k - 1].active);
+          var next = stateFor(s, epk.active);
+          if (next.scale !== prev.scale || next.opacity !== prev.opacity || next.blur !== prev.blur) {
+            tl.to(slots[s], {
+              scale: next.scale,
+              opacity: next.opacity,
+              filter: "blur(" + next.blur + "px)",
+              duration: epk.dur,
+              ease: "power4.inOut"
+            }, epk.at);
+          }
+          var pp = paletteFor(s, EPOCHS[k - 1].active);
+          var pn = paletteFor(s, epk.active);
+          if (pn !== pp) {
+            /* Заливка НЕ кроссфейдится симметрично: уходящая карточка гаснет в белый
+               первой, приходящая набирает синий второй — в кадре всегда один акцент. */
+            var isIncoming = pn === CARD_ON;
+            /* «Активна» и «неактивна» — ДВА ДИСКРЕТНЫХ СОСТОЯНИЯ: заливка и весь
+               текст перекидываются одним мгновенным set, промежуточных значений
+               между белым-на-синем и --ink-на-белом не существует вообще.
+               Момент — пик скорости рельса (power4.inOut, ~at+0.45): движение
+               маскирует перещёлк, уходящая гаснет на 2 кадра раньше приходящей,
+               поэтому двух синих карточек в кадре не бывает. */
+            var cAt = epk.at + (isIncoming ? 0.50 : 0.44);
+            tl.set(parts.cards, { backgroundColor: pn.bg, borderColor: pn.line }, cAt);
+            tl.set(parts.titles, { color: pn.title }, cAt);
+            tl.set(parts.subs, { color: pn.sub }, cAt);
+            tl.set(parts.nums, { color: pn.num }, cAt);
+            tl.set(parts.rules, { backgroundColor: pn.line }, cAt);
+            tl.set(parts.kickers, { color: pn.kicker }, cAt);
+            tl.set(parts.marks, { color: pn.mark }, cAt);
+          }
+          /* z-порядок переключаем на середине перехода */
+          if (next.z !== prev.z) {
+            tl.set(slots[s], { zIndex: next.z }, epk.at + epk.dur / 2);
+          }
+        }
+
+        /* подзаголовок собирается пословесно внутри становящейся активной карточки */
+        if (WORD_IN[s] !== undefined) {
+          tl.set(parts.words, { opacity: 0, y: 18 }, 0);
+          tl.to(parts.words, {
+            opacity: 1, y: 0,
+            duration: 0.38, stagger: 0.15, ease: "power3.out"
+          }, WORD_IN[s]);
+        }
+      }
+
+      /* [4] chapter-chip */
+
+      window.__timelines = window.__timelines || {};
+      window.__timelines["main"] = tl;
+    </script>
+  </body>
+</html>

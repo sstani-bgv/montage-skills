@@ -1,0 +1,233 @@
+<!doctype html>
+<html lang="ru" data-resolution="landscape">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920, height=1080" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <link rel="stylesheet" href="./assets/tokens.css" />
+    <style>
+      * { margin:0; padding:0; box-sizing:border-box; }
+      html, body { width:1920px; height:1080px; overflow:hidden; background: var(--paper); }
+      body { font-family: var(--font-body); color: var(--ink); }
+
+      #root { position:relative; width:1920px; height:1080px; overflow:hidden; background: var(--paper); }
+
+      /* Постоянный push-in всей сцены */
+      .stage { position:absolute; inset:0; transform-origin: 960px 540px; }
+      /* Камера: единый контейнер проезда */
+      .camera { position:absolute; inset:0; transform-origin: 960px 540px; }
+      /* Плоскости параллакса внутри камеры */
+      .plane { position:absolute; inset:0; }
+
+      .layer { position:absolute; inset:0; }
+
+      /* [0] мягкое пятно-«солнце» */
+      .sun {
+        position:absolute; left:1150px; top:470px; width:1200px; height:1200px;
+        margin-left:-600px; margin-top:-600px; border-radius:50%;
+        background: radial-gradient(circle closest-side,
+          rgba(46,88,234,0.11) 0%,
+          rgba(46,88,234,0.04) 54%,
+          transparent 100%);
+        filter: blur(44px);
+      }
+
+      /* иконки */
+      .icon-group {
+        position:absolute; width:400px; height:470px; margin-left:-200px; margin-top:-235px;
+        display:flex; flex-direction:column; align-items:center; justify-content:flex-start; gap:18px;
+      }
+      #docGroup { left:620px; top:600px; }
+      #hgGroup  { left:1300px; top:600px; }
+      .icon-group svg { display:block; }
+      .cap {
+        font-family: var(--font-body); font-weight:700; font-size:38px; letter-spacing:-0.02em;
+        color: var(--ink); white-space:nowrap;
+      }
+
+      /* [4] chapter-chip */
+      #chip {
+        position:absolute; left:960px; top:235px; width:560px; height:92px;
+        margin-left:-280px; margin-top:-46px;
+      }
+      .chip-bg {
+        position:absolute; inset:0; border-radius:46px;
+        background: var(--blue-100); border:1px solid var(--line-2);
+        transform-origin: 50% 50%;
+      }
+      .chip-row {
+        position:absolute; inset:0; display:flex; align-items:center; justify-content:center; gap:16px;
+      }
+      .chip-dot { width:18px; height:18px; border-radius:50%; background: var(--blue); display:block; }
+      .chip-w {
+        display:inline-block; font-family:var(--font-body); font-weight:700; font-size:32px;
+        letter-spacing:0.01em; color: var(--ink);
+      }
+
+      /* [5] финальный текстовый блок */
+      #textBlock { position:absolute; left:950px; top:280px; width:840px; }
+      #textBlock .h1 {
+        font-family: var(--font-body); font-weight:800; font-size:54px; line-height:1.14;
+        letter-spacing:-0.025em; color: var(--ink);
+      }
+      #textBlock .h1 .w { display:inline-block; }
+      #textBlock .rule { width:120px; height:4px; background: var(--blue); border-radius:2px; margin:34px 0 28px; }
+      #textBlock .body {
+        font-family: var(--font-body); font-weight:400; font-size:26px; line-height:1.5;
+        letter-spacing:-0.01em; color: var(--ink); max-width:760px;
+      }
+      #textBlock .body b { font-weight:700; color: var(--blue-700); }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-duration="6"
+         data-width="1920" data-height="1080">
+
+      <div class="stage" data-layout-allow-overlap data-layout-allow-overflow>
+        <div class="camera" data-layout-allow-overlap data-layout-allow-overflow>
+
+          <!-- [0] фон + круг-«солнце» -->
+          <div id="l-sun" class="clip layer" data-start="0" data-duration="6" data-track-index="0"
+               style="z-index:0" data-layout-ignore>
+            <div class="plane" id="planeSun"><div class="sun" id="sun"></div></div>
+          </div>
+
+          <!-- [1] иконка-документ + подпись -->
+          <div id="l-doc" class="clip layer" data-start="0" data-duration="6" data-track-index="1"
+               style="z-index:1" data-layout-allow-overflow>
+            <div class="plane" id="planeDoc">
+              <div class="icon-group" id="docGroup">
+                <svg width="300" height="376" viewBox="0 0 212 266" fill="none" aria-hidden="true">
+                  <rect x="12" y="12" width="188" height="242" rx="16" stroke="#2e58ea" stroke-width="3"/>
+                  <path d="M52 78 H160" stroke="#2e58ea" stroke-width="3" stroke-linecap="round"/>
+                  <path d="M52 132 H160" stroke="#2e58ea" stroke-width="3" stroke-linecap="round"/>
+                  <path d="M52 186 H120" stroke="#2e58ea" stroke-width="3" stroke-linecap="round"/>
+                </svg>
+                <div class="cap" id="capDoc">Контекст</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- [2] песочные часы + подпись -->
+          <div id="l-hg" class="clip layer" data-start="0" data-duration="6" data-track-index="2"
+               style="z-index:2" data-layout-allow-overflow>
+            <div class="plane" id="planeHg">
+              <div class="icon-group" id="hgGroup">
+                <svg width="300" height="376" viewBox="0 0 212 266" fill="none" aria-hidden="true">
+                  <path d="M46 18 H166" stroke="#f0584e" stroke-width="3" stroke-linecap="round"/>
+                  <path d="M46 248 H166" stroke="#f0584e" stroke-width="3" stroke-linecap="round"/>
+                  <path d="M58 18 V56 L106 133 L154 56 V18" stroke="#f0584e" stroke-width="3" stroke-linejoin="round"/>
+                  <path d="M58 248 V210 L106 133 L154 210 V248" stroke="#f0584e" stroke-width="3" stroke-linejoin="round"/>
+                  <path d="M84 214 H128" stroke="#f0584e" stroke-width="3" stroke-linecap="round"/>
+                </svg>
+                <div class="cap" id="capHg">Время</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- [4] chapter-chip -->
+          <div id="l-chip" class="clip layer" data-start="0" data-duration="6" data-track-index="4"
+               style="z-index:4" data-layout-allow-overflow>
+            <div class="plane" id="planeChip">
+              <div id="chip">
+                <div class="chip-bg" id="chipBg"></div>
+                <div class="chip-row">
+                  <span class="chip-dot" id="chipDot"></span>
+                  <span class="chip-w">Две</span>
+                  <span class="chip-w">проблемы</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- [5] финальный текстовый блок -->
+        <div id="l-text" class="clip layer" data-start="3.6" data-duration="2.4" data-track-index="5"
+             style="z-index:5" data-layout-allow-overlap>
+          <div id="textBlock">
+            <div class="h1"><span class="w">Обе</span> <span class="w">решаются</span> <span class="w">одним</span> <span class="w">файлом</span></div>
+            <div class="rule" id="tRule"></div>
+            <div class="body" id="tBody"><b>CLAUDE.md</b> — это спека, которую модель читает первой.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      (function () {
+        var q = function (s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); };
+
+        /* ---- геометрия проезда (посчитана заранее, никаких измерений в рантайме) ---- */
+        var CAM = { scale: 1.30, x: 60, y: 10 };
+        var P = 260;                    // базовая единица параллакса
+        var PAR = { doc: -0.5 * P, sun: 1.0 * P, hg: 1.7 * P, chip: -1.7 * P };
+        var DOLLY_AT = 2.6, DOLLY_DUR = 1.1, DOLLY_EASE = "power3.inOut";
+
+        var chipWords = q("#chip .chip-w");
+        var titleWords = q("#textBlock .h1 .w");
+
+        /* ---- начальные состояния: немедленно, чтобы кадр 0 был чистым ---- */
+        gsap.set(".stage", { scale: 1 });
+        gsap.set(".camera", { scale: 1, x: 0, y: 0 });
+        gsap.set("#planeSun,#planeDoc,#planeHg,#planeChip", { x: 0 });
+        gsap.set("#sun", { scale: 1, opacity: 0.9 });
+        gsap.set("#chipBg", { scaleX: 0.05, opacity: 0 });
+        gsap.set("#chip", { scale: 1, y: 0 });
+        gsap.set(chipWords.concat(q("#chipDot")), { opacity: 0, y: 6, filter: "blur(8px)" });
+        gsap.set("#docGroup", { x: -720, scale: 0.6, opacity: 0, filter: "blur(14px)" });
+        gsap.set("#hgGroup", { x: 720, scale: 0.6, opacity: 0, filter: "blur(14px)" });
+        gsap.set("#capDoc,#capHg", { opacity: 0, y: 6, filter: "blur(8px)" });
+        gsap.set("#textBlock", { x: 160, opacity: 0 });
+        gsap.set(titleWords, { opacity: 0, y: 22, filter: "blur(8px)" });
+        gsap.set("#tRule", { scaleX: 0, transformOrigin: "0% 50%" });
+        gsap.set("#tBody", { opacity: 0, y: 8, filter: "blur(8px)" });
+
+        var tl = gsap.timeline({ paused: true });
+
+        /* ---- постоянный push-in всей сцены ---- */
+        tl.to(".stage", { scale: 1.04, duration: 6, ease: "none" }, 0);
+
+        /* ---- 0.2–1.2 chapter-chip ---- */
+        tl.set("#chipBg", { opacity: 1 }, 0.2);
+        tl.to("#chipBg", { scaleX: 1, duration: 0.7, ease: "power3.out" }, 0.2);
+        tl.to("#chipDot", { opacity: 1, y: 0, filter: "blur(0px)", duration: 0.35, ease: "power2.out" }, 0.55);
+        chipWords.forEach(function (w, i) {
+          tl.to(w, { opacity: 1, y: 0, filter: "blur(0px)", duration: 0.35, ease: "power2.out" }, 0.7 + i * 0.15);
+        });
+
+        /* ---- 0.5–0.9 симметричный прилёт ---- */
+        tl.to("#docGroup", { x: 0, scale: 1, duration: 0.4, ease: "back.out(1.4)" }, 0.5);
+        tl.to("#hgGroup",  { x: 0, scale: 1, duration: 0.4, ease: "back.out(1.4)" }, 0.5);
+        // blur→sharp тянется чуть дольше самого прилёта, чтобы размытие успело прочитаться
+        tl.to("#docGroup", { opacity: 1, filter: "blur(0px)", duration: 0.46, ease: "power1.out" }, 0.5);
+        tl.to("#hgGroup",  { opacity: 1, filter: "blur(0px)", duration: 0.46, ease: "power1.out" }, 0.5);
+
+        /* ---- 1.1–1.6 подписи ---- */
+        tl.to("#capDoc", { opacity: 1, y: 0, filter: "blur(0px)", duration: 0.35, ease: "power2.out" }, 1.1);
+        tl.to("#capHg", { opacity: 1, y: 0, filter: "blur(0px)", duration: 0.35, ease: "power2.out" }, 1.25);
+
+        /* ---- 2.6–3.7 ОДИН камерный проезд ---- */
+        tl.to(".camera", { scale: CAM.scale, x: CAM.x, y: CAM.y, duration: DOLLY_DUR, ease: DOLLY_EASE }, DOLLY_AT);
+        tl.to("#planeDoc",  { x: PAR.doc,  duration: DOLLY_DUR, ease: DOLLY_EASE }, DOLLY_AT);
+        tl.to("#planeChip", { x: PAR.chip, duration: DOLLY_DUR, ease: DOLLY_EASE }, DOLLY_AT);
+        tl.to("#planeSun",  { x: PAR.sun,  duration: DOLLY_DUR, ease: DOLLY_EASE }, DOLLY_AT);
+        tl.to("#planeHg",   { x: PAR.hg,   duration: DOLLY_DUR, ease: DOLLY_EASE }, DOLLY_AT);
+        tl.to("#docGroup",  { scale: 1.15,  duration: DOLLY_DUR, ease: DOLLY_EASE }, DOLLY_AT);
+        tl.to("#chip",      { scale: 0.62, y: 34, duration: DOLLY_DUR, ease: DOLLY_EASE }, DOLLY_AT);
+        tl.to("#sun",       { scale: 1.14, opacity: 0.38, duration: DOLLY_DUR, ease: DOLLY_EASE }, DOLLY_AT);
+
+        /* ---- 3.7–6.0 финальный текстовый блок ---- */
+        tl.to("#textBlock", { x: 0, opacity: 1, duration: 0.55, ease: "power3.out" }, 3.7);
+        titleWords.forEach(function (w, i) {
+          tl.to(w, { opacity: 1, y: 0, filter: "blur(0px)", duration: 0.4, ease: "power2.out" }, 3.78 + i * 0.12);
+        });
+        tl.to("#tRule", { scaleX: 1, duration: 0.45, ease: "power3.out" }, 4.32);
+        tl.to("#tBody", { opacity: 1, y: 0, filter: "blur(0px)", duration: 0.4, ease: "power2.out" }, 4.46);
+
+        window.__timelines = window.__timelines || {};
+        window.__timelines["main"] = tl;
+      })();
+    </script>
+  </body>
+</html>

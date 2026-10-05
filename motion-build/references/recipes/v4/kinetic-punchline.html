@@ -1,0 +1,100 @@
+<!-- dur=12.3 | стрим 17:07.2–17:19.5 | 30 минут в день вместо 8 часов — с нейронками -->
+<style>
+@font-face { font-family: "KinEmoji"; src: local("Apple Color Emoji"), local("AppleColorEmoji"); }
+/* kinetic: крупные слова по центру, одна фраза в кадре, жёсткие резы / push */
+#kin { position: absolute; inset: 0; transform-origin: 50% 50%; }
+.ph { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; }
+.tx { position: relative; display: flex; flex-direction: column; align-items: center; text-align: center; }
+.ln { font-weight: 800; font-size: 138px; line-height: .95; letter-spacing: -.018em; text-transform: uppercase; white-space: nowrap; color: var(--ink); }
+.ln .w { position: relative; }
+.s90 { font-size: 104px; color: var(--muted); }
+.s120 { font-size: 138px; } .s130 { font-size: 150px; } .s150 { font-size: 172px; } .s160 { font-size: 184px; } .s170 { font-size: 196px; } .s180 { font-size: 212px; }
+.s60 { font-size: 60px; font-weight: 700; letter-spacing: -.015em; color: var(--muted); }
+.mu { color: var(--muted); }
+.cor { color: #c8322a; }
+.lc { text-transform: none; }
+.emo { position: absolute; left: 0; right: 0; bottom: 100%; padding-bottom: 30px; text-align: center; font-size: 104px; line-height: 1;
+  font-family: "KinEmoji", sans-serif; }
+.emo span { display: inline-block; }
+/* маркер за словом и зачёркивание — от левого края слова */
+.mk { isolation: isolate; }
+.mk .bar { position: absolute; left: -.05em; right: -.05em; bottom: .04em; height: .36em; background: var(--mark); z-index: -1; border-radius: .05em; transform-origin: 0 50%; }
+.st .bar { position: absolute; left: -.04em; right: -.04em; top: 50%; height: 12px; margin-top: -4px; background: var(--coral); border-radius: 6px; transform-origin: 0 50%; }
+.cnt { display: inline-block; text-align: right; font-variant-numeric: tabular-nums; }
+</style>
+<body>
+<div id="kin">
+<div class="ph" id="p1"><div class="tx">
+  <div class="ln a"><span class="w s120">я</span> <span class="w s120">программист —</span></div>
+  <div class="ln b"><span class="w s120">даю</span> <span class="w s170 acc">результат</span></div></div></div>
+<div class="ph" id="p2"><div class="tx"><div class="emo"><span>🏦</span></div>
+  <div class="ln a"><span class="w s120">работал</span></div>
+  <div class="ln b"><span class="w s90">в</span> <span class="w s170 acc">банке</span></div></div></div>
+<div class="ph" id="p3"><div class="tx" id="t3"><div class="emo"><span>⏱️</span></div>
+  <div class="ln a"><span class="w s180 acc"><span class="cnt" id="c30" style="min-width:1.16em">30</span> минут</span></div>
+  <div class="ln b"><span class="w s90">в</span> <span class="w s120">день</span></div>
+  <div class="ln c" style="margin-top:22px"><span class="w s90">вместо</span> <span class="w s130 cor st"><i class="bar"></i>8 часов</span></div></div></div>
+<div class="ph" id="p4"><div class="tx"><div class="emo"><span>🙌</span></div>
+  <div class="ln a"><span class="w s120">работодателю —</span></div>
+  <div class="ln b"><span class="w s180 acc">кайф</span></div></div></div>
+<div class="ph" id="p5" data-layout-allow-overflow><div class="tx">
+  <div class="ln a"><span class="w s150 acc">с</span> <span class="w s150 acc">нейронками</span></div>
+  <div class="ln b" style="margin-top:26px; font-size:60px"><span class="w s60">самые</span> <span class="w s60">передовые</span> <span class="w s60">инструменты</span></div></div></div>
+</div>
+<div class="kicker" style="display:none" data-layout-ignore></div><div class="hero-in" style="display:none" data-layout-ignore></div>
+</body>
+<script>
+// ── kinetic-движок: призрак .28 → 1, жёсткий рез, вертикальный push ──
+const FPS = 30, fr = (t) => Math.round(t * FPS) / FPS;
+tl.to("#kin", { scale: 1.025, duration: DUR, ease: "none" }, 0); // вместе с #stage 1.035 — наезд ~1.06
+gsap.set(".ph .w", { opacity: 0, y: 18 });
+gsap.set(".emo span", { opacity: 0, scale: 0.4, y: 26 });
+gsap.set(".bar", { scaleX: 0 });
+// слова по одному: сразу целиком на .28 (3 кадра), потом за 2 кадра на полную — одной фазой с кастомной кривой
+const ghostEase = (p) => (p < 0.6 ? 0 : (p - 0.6) / 0.4);
+function W(sel, t, step = 0.15) {
+  gsap.utils.toArray(sel).forEach((el, i) => {
+    const s = fr(t + i * step);
+    if (s === 0) { gsap.set(el, { opacity: 0.7, y: 8 }); tl.to(el, { opacity: 1, y: 0, duration: 0.15, ease: "power2.out" }, 0); return; } // кадр 0: слово уже читается
+    tl.fromTo(el, { opacity: 0.28 }, { opacity: 1, duration: 0.17, ease: ghostEase, immediateRender: false }, s);
+    tl.fromTo(el, { y: 18 }, { y: 0, duration: 0.25, ease: "power3.out", immediateRender: false }, s);
+  });
+}
+function E(sel, t) {
+  if (fr(t) === 0) { gsap.set(sel, { opacity: 0.6, scale: 0.8, y: 10 }); tl.to(sel, { opacity: 1, scale: 1, y: 0, duration: 0.3, ease: "back.out(2)" }, 0); return; } tl.to(sel, { opacity: 1, scale: 1, y: 0, duration: 0.4, ease: "back.out(2)" }, fr(t)); }
+function cut(sel, t) { tl.set(sel, { autoAlpha: 0 }, fr(t)); }
+// push: обе фразы едут одним ходом (одна кривая, один путь) — как рельс; блюр-горб на общем холсте
+function push(a, b, t) {
+  t = fr(t);
+  gsap.set(b, { y: 700 });
+  tl.to(a, { y: -700, duration: 0.5, ease: "power3.inOut" }, t);
+  tl.to(b, { y: 0, duration: 0.5, ease: "power3.inOut" }, t);
+  tl.to("#kin", { keyframes: [{ filter: "blur(10px)", duration: 0.25, ease: "power1.in" }, { filter: "blur(0px)", duration: 0.25, ease: "power1.out" }] }, t);
+  tl.set(a, { autoAlpha: 0 }, fr(t + 0.52));
+}
+function bar(sel, t, d = 0.3) { tl.to(sel, { scaleX: 1, duration: d, ease: "power2.out" }, fr(t)); }
+// блок пересобирается по центру, когда дописывается строка
+function recenter(sel, dy, t) { gsap.set(sel, { y: dy }); tl.to(sel, { y: 0, duration: 0.4, ease: "power2.inOut" }, fr(t)); }
+function shake(sel, t) { tl.to(sel, { keyframes: { x: [0, -16, 14, -10, 6, 0] }, duration: 0.42, ease: "none" }, fr(t)); }
+
+// тайминги — по пословной разметке Groq (абс. = 1027.2 + t), текст на 0.15–0.35 с раньше голоса
+W("#p1 .ln.a .w", 0, 0);                                      // программисты 1027.14–1028.86
+W("#p1 .ln.b .w", 0.6, 0.18);
+cut("#p1", 1.5);
+W("#p2 .ln.a .w", 1.5); E("#p2 .emo span", 1.5);             // я когда в Сбербанке работал 1028.86–1030.3
+W("#p2 .ln.b .w", 1.9, 0.14);                                 // в Сбербанке 1029.4
+cut("#p2", 3.9);
+recenter("#t3", 88, 4.85);
+E("#p3 .emo span", 3.9);
+W("#p3 .ln.a .w", 3.9);                                       // 30 минут 1031.66–1032.06
+countUp(document.getElementById("c30"), 0, 30, 3.98, 0.5, (v) => Math.round(v));
+W("#p3 .ln.b .w", 4.55, 0.13);                                // в день 1032.06–1032.3
+W("#p3 .ln.c .w", 4.9, 0.18);                                 // вместо 8 часов 1032.3–1032.68
+bar("#p3 .st .bar", 5.6, 0.28);
+cut("#p3", 6.9);
+W("#p4 .ln.a .w", 6.9); E("#p4 .emo span", 6.9);             // для работодателя 1033.3–1035.2
+W("#p4 .ln.b .w", 8.1);                                       // наоборот кайф 1035.42–1035.58
+push("#p4", "#p5", 9.0);
+W("#p5 .ln.a .w", 9.05, 0.15);                                // с нейронками 1036.5–1036.9
+W("#p5 .ln.b .w", 10.8, 0.2);                                 // самые передовые инструменты 1038.18–1038.78
+</script>

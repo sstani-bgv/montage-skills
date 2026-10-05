@@ -1,0 +1,52 @@
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { width: 1920px; height: 1080px; overflow: hidden; background: var(--paper); }
+body { font-family: var(--font-body); color: var(--ink); }
+#root { position: relative; width: 1920px; height: 1080px; overflow: hidden; background: var(--paper); }
+
+/* фон: пятно ползёт, миллиметровка гаснет к краям */
+.bg { position: absolute; inset: 0; }
+.blob { position: absolute; left: 640px; top: -160px; width: 1500px; height: 1300px; border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(46, 88, 234, .17), rgba(46, 88, 234, .06) 55%, rgba(46, 88, 234, 0)); }
+.blob2 { position: absolute; left: -420px; top: 520px; width: 1100px; height: 900px; border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(46, 88, 234, .08), rgba(46, 88, 234, 0)); }
+.paper-grid { position: absolute; inset: 0;
+  background-image: linear-gradient(rgba(20,22,26,.035) 1px, transparent 1px), linear-gradient(90deg, rgba(20,22,26,.035) 1px, transparent 1px);
+  background-size: 48px 48px;
+  -webkit-mask-image: radial-gradient(ellipse 70% 70% at 30% 45%, #000 20%, transparent 75%);
+          mask-image: radial-gradient(ellipse 70% 70% at 30% 45%, #000 20%, transparent 75%); }
+
+#stage { position: absolute; inset: 0; transform-origin: 50% 50%; }
+
+/* картинка-герой: белый фон генерации заранее переведён в альфу (img/alpha.py) */
+.hero { position: absolute; left: 900px; top: 70px; width: 950px; height: 950px; }
+.hero-in { position: absolute; inset: 0; }
+.hero img { width: 100%; height: 100%; object-fit: contain; display: block; }
+
+/* кикер — не пилюля, а строка-рубрика: синяя черта + капс с трекингом */
+.kicker { position: absolute; left: 120px; top: 158px; display: flex; align-items: center; gap: 18px;
+  font-weight: 700; font-size: 24px; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); white-space: nowrap; }
+.kicker i { width: 44px; height: 5px; border-radius: 3px; background: var(--blue); display: block; }
+
+.h1 { position: absolute; left: 120px; width: 800px; font-weight: 800; font-size: 100px; line-height: 1.02; letter-spacing: -.035em; color: var(--ink); }
+.h1.sm { font-size: 84px; }
+.w { display: inline-block; white-space: nowrap; }
+.acc { color: var(--blue); }
+.sub { position: absolute; left: 120px; width: 780px; font-weight: 600; font-size: 40px; line-height: 1.2; letter-spacing: -.02em; color: var(--muted); }
+
+.chip { position: absolute; display: inline-flex; align-items: center; gap: 14px; padding: 18px 30px; border-radius: var(--r-chip);
+  background: var(--surface); border: 1px solid var(--line); box-shadow: 0 2px 4px rgba(20,22,26,.06), 0 14px 34px rgba(20,22,26,.12);
+  font-weight: 700; font-size: 36px; letter-spacing: -.015em; color: var(--ink); white-space: nowrap; }
+.chip i { width: 14px; height: 14px; border-radius: 50%; background: var(--line-2); display: block; }
+.chip-on { position: absolute; inset: -1px; border-radius: var(--r-chip); background: var(--blue); }
+.chip .lbl { position: relative; }
+
+.card { position: absolute; left: 120px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg);
+  box-shadow: 0 2px 4px rgba(20,22,26,.05), 0 18px 40px rgba(20,22,26,.10); }
+
+.steps { position: absolute; left: 120px; }
+.step { display: flex; align-items: center; gap: 26px; height: 92px; font-weight: 700; font-size: 44px; letter-spacing: -.02em; color: var(--ink); }
+.step .num { width: 64px; height: 64px; border-radius: 50%; display: grid; place-items: center; font-size: 30px; font-weight: 800;
+  background: var(--surface); border: 2px solid var(--line-2); color: var(--muted); flex: none; }
+
+.stamp { position: absolute; font-family: var(--font-display); font-weight: 700; font-size: 72px; letter-spacing: .02em; color: #c8322a;
+  border: 8px solid var(--coral); border-radius: 18px; padding: 8px 34px; background: rgba(252, 228, 225, .9); }

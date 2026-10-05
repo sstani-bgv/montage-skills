@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="ru" data-resolution="landscape">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920, height=1080" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <link rel="stylesheet" href="./assets/tokens.css" />
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body {
+        width: 1920px; height: 1080px; overflow: hidden;
+        background: var(--paper);
+      }
+      body { font-family: var(--font-body); color: var(--ink); }
+
+      #stage { position: absolute; inset: 0; background: var(--paper); }
+      #push  { position: absolute; inset: 0; transform-origin: 960px 540px; }
+
+      /* [1] панель */
+      #panel {
+        position: absolute; left: 200px; top: 150px;
+        width: 1400px; height: 700px;
+        background: var(--blue-100);
+        border-radius: var(--r-xl);
+      }
+
+      #kicker {
+        position: absolute; left: 248px; top: 200px;
+        color: var(--blue);
+      }
+
+      /* [2] строки-чипы */
+      .row {
+        position: absolute; height: 150px;
+        display: flex; align-items: center;
+        padding: 0 40px; gap: 28px;
+        border-radius: var(--r-lg);
+        background: #e1e7fb;
+        will-change: transform, opacity, filter;
+      }
+      #row1 { left: 248px; width: 1304px; top: 268px; }
+      #row2 { left: 284px; width: 1268px; top: 446px; }
+      #row3 { left: 320px; width: 1232px; top: 624px; }
+
+      /* [4] бэйдж с галочкой */
+      .badge {
+        position: relative; flex: 0 0 auto;
+        width: 76px; height: 76px; border-radius: 38px;
+        background: var(--blue);
+      }
+      .badge svg { display: block; width: 76px; height: 76px; }
+      .badge path {
+        fill: none; stroke: #ffffff; stroke-width: 7;
+        stroke-linecap: round; stroke-linejoin: round;
+      }
+
+      /* [3] крупные цифры */
+      .num {
+        flex: 0 0 auto; min-width: 62px; text-align: center;
+        font-family: var(--font-display); font-weight: 700;
+        font-size: 70px; line-height: 1; letter-spacing: -0.03em;
+        color: var(--blue-700);
+      }
+      .cmd {
+        flex: 0 0 auto;
+        font-family: var(--font-body); font-weight: 700;
+        font-size: 40px; letter-spacing: -0.01em; color: var(--ink);
+      }
+      .dash { flex: 0 0 auto; font-size: 32px; color: var(--muted); }
+      .desc {
+        flex: 0 0 auto;
+        font-family: var(--font-body); font-weight: 400;
+        font-size: 30px; letter-spacing: -0.01em; color: var(--muted);
+      }
+
+      #outro {
+        position: absolute; left: 248px; top: 892px; width: 1280px;
+        font-family: var(--font-body); font-weight: 700;
+        font-size: 38px; letter-spacing: -0.02em; color: var(--ink);
+      }
+      #outro b { color: var(--blue); font-weight: 700; }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-duration="6"
+         data-width="1920" data-height="1080">
+      <div id="stage" class="clip" data-start="0" data-duration="6" data-track-index="1">
+        <div id="push">
+          <div id="panel"></div>
+          <div id="kicker" class="t-kicker">Что делает скилл</div>
+
+          <div class="row" id="row1">
+            <div class="badge" id="badge1">
+              <svg viewBox="0 0 76 76" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                <path class="tick" id="tick1" d="M22 39 L33 50 L55 26" />
+              </svg>
+            </div>
+            <div class="num">1</div>
+            <div class="cmd">/session-analysis</div>
+            <div class="dash">—</div>
+            <div class="desc">разбирает сессию</div>
+          </div>
+
+          <div class="row" id="row2">
+            <div class="badge" id="badge2">
+              <svg viewBox="0 0 76 76" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                <path class="tick" id="tick2" d="M22 39 L33 50 L55 26" />
+              </svg>
+            </div>
+            <div class="num">2</div>
+            <div class="cmd">/improve-memory</div>
+            <div class="dash">—</div>
+            <div class="desc">дописывает CLAUDE.md</div>
+          </div>
+
+          <div class="row" id="row3">
+            <div class="badge" id="badge3">
+              <svg viewBox="0 0 76 76" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                <path class="tick" id="tick3" d="M22 39 L33 50 L55 26" />
+              </svg>
+            </div>
+            <div class="num">3</div>
+            <div class="cmd">/send-results</div>
+            <div class="dash">—</div>
+            <div class="desc">присылает отчёт</div>
+          </div>
+
+          <div id="outro">Три команды — и память проекта обновилась&nbsp;<b>сама</b>.</div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      (function () {
+        var TICK_LEN = 50;
+
+        var rows = ["#row1", "#row2", "#row3"];
+        var badges = ["#badge1", "#badge2", "#badge3"];
+        var ticks = ["#tick1", "#tick2", "#tick3"];
+
+        // Финальные состояния каскада 1 — РАЗНЫЕ (глубина).
+        var restOpacity = [1, 0.7, 0.45];
+        var restBlur = [0, 1.5, 3];
+
+        // --- начальные состояния: немедленным set, не tl.set ---
+        rows.forEach(function (sel, i) {
+          gsap.set(sel, {
+            opacity: 0,
+            y: -30,
+            filter: "blur(8px)",
+            backgroundColor: "#e1e7fb",
+            boxShadow: "0 0 0 rgba(20,22,26,0)"
+          });
+        });
+        gsap.set(badges, { scale: 0, transformOrigin: "50% 50%" });
+        gsap.set(ticks, { strokeDasharray: TICK_LEN, strokeDashoffset: TICK_LEN });
+        gsap.set("#outro", { opacity: 0, y: 22 });
+        gsap.set("#push", { scale: 1 });
+
+        var tl = gsap.timeline({ paused: true });
+
+        // Постоянный push-in на всю длительность.
+        tl.to("#push", { scale: 1.03, duration: 6, ease: "none" }, 0);
+
+        // ---- КАСКАД 1: плавный и частый. power2.out, stagger 0.25, dur 0.5 ----
+        rows.forEach(function (sel, i) {
+          tl.to(sel, {
+            opacity: restOpacity[i],
+            y: 0,
+            filter: "blur(" + restBlur[i] + "px)",
+            duration: 0.5,
+            ease: "power2.out"
+          }, 0.15 + i * 0.2);
+        });
+
+        // ---- КАСКАД 2: резкий и редкий. back.out(2.2), интервал 0.8 с ----
+        [2.0, 2.8, 3.6].forEach(function (t, i) {
+          // бэйдж выскакивает
+          tl.to(badges[i], {
+            scale: 1,
+            duration: 0.25,
+            ease: "back.out(2.2)"
+          }, t);
+          // галочка рисуется ВНУТРИ уже выскочившего круга (+0.08 с)
+          tl.to(ticks[i], {
+            strokeDashoffset: 0,
+            duration: 0.2,
+            ease: "power2.out"
+          }, t + 0.08);
+          // строка доводится до полной резкости
+          tl.to(rows[i], {
+            opacity: 1,
+            filter: "blur(0px)",
+            duration: 0.3,
+            ease: "power2.out"
+          }, t);
+          // дискретное переключение подложки чипа (не твин по rgba)
+          tl.set(rows[i], {
+            backgroundColor: "#ffffff",
+            boxShadow: "0 1px 2px rgba(20,22,26,.05), 0 8px 24px rgba(20,22,26,.06)"
+          }, t + 0.12);
+        });
+
+        // ---- итоговая строка ----
+        tl.to("#outro", { opacity: 1, y: 0, duration: 0.5, ease: "power2.out" }, 4.2);
+
+        window.__timelines = window.__timelines || {};
+        window.__timelines["main"] = tl;
+      })();
+    </script>
+  </body>
+</html>

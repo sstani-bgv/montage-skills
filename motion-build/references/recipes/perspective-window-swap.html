@@ -1,0 +1,389 @@
+<!doctype html>
+<html lang="ru" data-resolution="landscape">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920, height=1080" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <link rel="stylesheet" href="./assets/tokens.css" />
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body { width: 1920px; height: 1080px; overflow: hidden; background: var(--paper); }
+      body { font-family: var(--font-body); color: var(--ink); }
+
+      /* ---------- фон ---------- */
+      #bg { position: absolute; inset: 0; background: var(--paper); }
+      #bg .blob {
+        position: absolute; border-radius: 50%;
+        filter: blur(160px);
+      }
+      #bg .blob-a { left: -220px; top: -180px; width: 980px; height: 980px;
+        background: rgba(46, 88, 234, .16); }
+      #bg .blob-b { right: -260px; bottom: -300px; width: 1120px; height: 1120px;
+        background: rgba(46, 88, 234, .10); }
+
+      /* ---------- лента света ---------- */
+      #ribbon { position: absolute; inset: 0; }
+      #ribbon svg { width: 1920px; height: 1080px; display: block; }
+      #ribbon .glow { filter: blur(36px); opacity: .78; }
+      #ribbon .thread { opacity: .8; }
+
+      /* ---------- 3D-сцена ---------- */
+      #stage {
+        position: absolute; inset: 0;
+        perspective: 1600px;
+        perspective-origin: 50% 44%;
+        transform-style: preserve-3d;
+      }
+      .win {
+        position: absolute;
+        left: 288px; top: 118px;
+        width: 1344px; height: 742px;
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: var(--r-md);
+        box-shadow: 0 30px 60px rgba(20, 22, 26, .16);
+        overflow: hidden;
+        display: flex; flex-direction: column;
+        transform-style: preserve-3d;
+        will-change: transform, filter;
+      }
+
+      /* заголовочная полоса */
+      .bar {
+        height: 68px; flex: none;
+        display: flex; align-items: center; gap: 18px;
+        padding: 0 26px;
+        background: var(--surface-2);
+        border-bottom: 1px solid var(--line);
+      }
+      .dots { display: flex; gap: 10px; }
+      .dots i { width: 13px; height: 13px; border-radius: 50%; background: var(--line-2); display: block; }
+      .bar .name {
+        font-family: var(--font-body); font-weight: 700; font-size: 24px;
+        letter-spacing: -0.01em; color: var(--ink);
+      }
+      .bar .path { font-size: 20px; color: var(--muted); font-weight: 400; }
+
+      .body { flex: 1; display: flex; min-height: 0; }
+
+      /* боковая колонка */
+      .side {
+        width: 300px; flex: none;
+        background: var(--surface-2);
+        border-right: 1px solid var(--line);
+        padding: 30px 26px;
+        display: flex; flex-direction: column; gap: 16px;
+      }
+      .side .lbl {
+        font-family: var(--font-body); font-weight: 700; font-size: 15px;
+        letter-spacing: .14em; text-transform: uppercase; color: var(--muted);
+        margin-bottom: 4px;
+      }
+      .srow { height: 20px; border-radius: 6px; background: #dfe3ea; }
+      .srow.on { background: var(--blue-100); border: 1px solid rgba(46,88,234,.28); height: 34px; }
+
+      /* контент */
+      .main { flex: 1; padding: 44px 54px; display: flex; flex-direction: column; gap: 26px; min-width: 0; }
+      .main h2 {
+        font-family: var(--font-body); font-weight: 700; font-size: 38px;
+        letter-spacing: -0.02em; color: var(--ink);
+      }
+      .line { font-family: var(--font-body); font-weight: 400; font-size: 24px; color: var(--muted); }
+      .ph { height: 18px; border-radius: 6px; background: var(--surface-2); }
+      .sep { height: 1px; background: var(--line); margin: 4px 0; }
+      .klbl { font-family: var(--font-body); font-weight: 700; font-size: 15px;
+        letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
+      .rows { display: flex; flex-direction: column; gap: 16px; flex: 1; }
+
+      /* маркер */
+      .mk { position: relative; display: inline-block; padding: 2px 8px; color: var(--ink); }
+      .mk .fill {
+        position: absolute; left: 0; right: 0; top: 4px; bottom: 3px;
+        background: var(--mark); border-radius: 4px; z-index: 0;
+        transform-origin: 0% 50%;
+      }
+      .mk span { position: relative; z-index: 1; }
+
+      /* список скилов */
+      .item {
+        display: flex; align-items: center; gap: 18px;
+        padding: 20px 22px; border: 1px solid var(--line);
+        border-radius: var(--r-sm); background: var(--surface);
+      }
+      .item .ring {
+        width: 30px; height: 30px; flex: none; border-radius: 50%;
+        border: 2px solid var(--line-2);
+      }
+      .item .ring.b { border-color: var(--blue); }
+      .item .tt { font-size: 24px; font-weight: 700; letter-spacing: -0.01em; }
+      .item .ph { flex: 1; }
+
+      /* сетка карточек */
+      .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; flex: 1; }
+      .card {
+        background: var(--surface); border: 1px solid var(--line);
+        border-radius: var(--r-lg); padding: 22px 20px;
+        display: flex; flex-direction: column; gap: 16px;
+      }
+      .card .sq { width: 26px; height: 26px; border: 2px solid var(--line-2); border-radius: 5px; }
+      .card .sq.b { border-color: var(--blue); }
+      .card .ct { font-size: 26px; font-weight: 700; letter-spacing: -0.01em; }
+
+      /* подпись */
+      #caption {
+        position: absolute; left: 0; right: 0; top: 926px;
+        text-align: center;
+        font-family: var(--font-body); font-weight: 700; font-size: 38px;
+        letter-spacing: -0.02em; color: var(--ink);
+      }
+      #caption .w { display: inline-block; margin: 0 .18em; }
+
+      #mark {
+        position: absolute; left: 288px; top: 62px;
+        font-family: var(--font-body); font-weight: 700; font-size: 15px;
+        letter-spacing: .16em; text-transform: uppercase; color: var(--muted);
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-duration="6"
+         data-width="1920" data-height="1080">
+
+      <!-- [0] фон -->
+      <div id="bg" class="clip" data-start="0" data-duration="6" data-track-index="0" data-layout-allow-overflow>
+        <div class="blob blob-a"></div>
+        <div class="blob blob-b"></div>
+      </div>
+
+      <!-- [1] лента света -->
+      <div id="ribbon" class="clip" data-start="0" data-duration="6" data-track-index="1"
+           data-layout-ignore>
+        <svg viewBox="0 0 1920 1080" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="lg" x1="0" y1="0" x2="1" y2="0.5">
+              <stop offset="0%" stop-color="#2e58ea" stop-opacity="0" />
+              <stop offset="28%" stop-color="#2e58ea" stop-opacity="1" />
+              <stop offset="72%" stop-color="#5f80ff" stop-opacity="1" />
+              <stop offset="100%" stop-color="#2e58ea" stop-opacity="0" />
+            </linearGradient>
+          </defs>
+          <g class="glow">
+            <path id="rb1" fill="none" stroke="url(#lg)" stroke-width="200" stroke-linecap="round"
+                  d="M -360 1240 C 340 1180, 240 620, 900 540 S 1560 460, 2280 -160" />
+          </g>
+          <g class="thread">
+            <path id="rb2" fill="none" stroke="url(#lg)" stroke-width="9" stroke-linecap="round"
+                  d="M -360 1120 C 400 1080, 300 520, 940 452 S 1620 380, 2280 -260" />
+          </g>
+        </svg>
+      </div>
+
+      <div id="mark" class="clip" data-start="0" data-duration="6" data-track-index="2" data-layout-allow-overlap data-layout-allow-occlusion>
+        Дизайн-система канала
+      </div>
+
+      <!-- [2..3] 3D-сцена -->
+      <div id="stage" data-layout-allow-overlap data-layout-allow-occlusion>
+
+        <!-- окно 1 -->
+        <div id="w1" class="win clip" data-start="0" data-duration="2.85" data-track-index="3"
+             data-layout-allow-overlap>
+          <div class="bar">
+            <div class="dots"><i></i><i></i><i></i></div>
+            <div class="name" data-layout-allow-overlap data-layout-allow-occlusion>CLAUDE.md</div>
+            <div class="path" data-layout-allow-overlap data-layout-allow-occlusion>/ проект / корень</div>
+          </div>
+          <div class="body">
+            <div class="side">
+              <div class="lbl" data-layout-allow-overlap data-layout-allow-occlusion>Файлы</div>
+              <div class="srow on"></div>
+              <div class="srow" style="width:82%"></div>
+              <div class="srow" style="width:64%"></div>
+              <div class="srow" style="width:74%"></div>
+              <div class="srow" style="width:52%"></div>
+              <div class="srow" style="width:70%"></div>
+              <div class="srow" style="width:46%"></div>
+              <div class="srow" style="width:63%"></div>
+            </div>
+            <div class="main">
+              <h2 data-layout-allow-overlap data-layout-allow-occlusion>Правила проекта</h2>
+              <div class="line" data-layout-allow-overlap data-layout-allow-occlusion>Отвечай по-русски, коротко, без вводных.</div>
+              <div class="line" data-layout-allow-overlap data-layout-allow-occlusion>
+                <span class="mk" data-layout-allow-overlap data-layout-allow-occlusion><span class="fill" id="mk1"></span><span>Не трогай файлы вне каталога src</span></span>
+              </div>
+              <div class="line" data-layout-allow-overlap data-layout-allow-occlusion>Перед коммитом — прогон тестов.</div>
+              <div class="sep"></div>
+              <div class="klbl" data-layout-allow-overlap data-layout-allow-occlusion>Контекст</div>
+              <div class="rows">
+                <div class="ph" style="width:88%"></div>
+                <div class="ph" style="width:72%"></div>
+                <div class="ph" style="width:81%"></div>
+                <div class="ph" style="width:58%"></div>
+                <div class="ph" style="width:65%"></div>
+                <div class="ph" style="width:44%"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- окно 2 -->
+        <div id="w2" class="win clip" data-start="2" data-duration="3.05" data-track-index="4"
+             data-layout-allow-overlap>
+          <div class="bar">
+            <div class="dots"><i></i><i></i><i></i></div>
+            <div class="name" data-layout-allow-overlap data-layout-allow-occlusion>Скилы</div>
+            <div class="path" data-layout-allow-overlap data-layout-allow-occlusion>/ проект / .claude / skills</div>
+          </div>
+          <div class="body">
+            <div class="side">
+              <div class="lbl" data-layout-allow-overlap data-layout-allow-occlusion>Каталог</div>
+              <div class="srow" style="width:78%"></div>
+              <div class="srow on"></div>
+              <div class="srow" style="width:66%"></div>
+              <div class="srow" style="width:84%"></div>
+              <div class="srow" style="width:56%"></div>
+              <div class="srow" style="width:72%"></div>
+              <div class="srow" style="width:48%"></div>
+              <div class="srow" style="width:66%"></div>
+            </div>
+            <div class="main">
+              <h2 data-layout-allow-overlap data-layout-allow-occlusion>Три подключённых навыка</h2>
+              <div class="item">
+                <div class="ring b"></div>
+                <div class="tt" data-layout-allow-overlap data-layout-allow-occlusion>
+                  <span class="mk" data-layout-allow-overlap data-layout-allow-occlusion><span class="fill" id="mk2"></span><span>Транскрипт</span></span>
+                </div>
+                <div class="ph" style="max-width:280px"></div>
+              </div>
+              <div class="item">
+                <div class="ring"></div>
+                <div class="tt" data-layout-allow-overlap data-layout-allow-occlusion>Монтаж</div>
+                <div class="ph" style="max-width:220px"></div>
+              </div>
+              <div class="item">
+                <div class="ring"></div>
+                <div class="tt" data-layout-allow-overlap data-layout-allow-occlusion>Публикация</div>
+                <div class="ph" style="max-width:320px"></div>
+              </div>
+              <div class="sep"></div>
+              <div class="klbl" data-layout-allow-overlap data-layout-allow-occlusion>Что подключилось</div>
+              <div class="rows">
+                <div class="ph" style="width:84%"></div>
+                <div class="ph" style="width:66%"></div>
+                <div class="ph" style="width:76%"></div>
+                <div class="ph" style="width:46%"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- окно 3 -->
+        <div id="w3" class="win clip" data-start="4.2" data-duration="1.8" data-track-index="5"
+             data-layout-allow-overlap>
+          <div class="bar">
+            <div class="dots"><i></i><i></i><i></i></div>
+            <div class="name" data-layout-allow-overlap data-layout-allow-occlusion>База знаний</div>
+            <div class="path" data-layout-allow-overlap data-layout-allow-occlusion>/ проект / knowledge</div>
+          </div>
+          <div class="body">
+            <div class="side">
+              <div class="lbl" data-layout-allow-overlap data-layout-allow-occlusion>Разделы</div>
+              <div class="srow" style="width:70%"></div>
+              <div class="srow" style="width:88%"></div>
+              <div class="srow on"></div>
+              <div class="srow" style="width:60%"></div>
+              <div class="srow" style="width:76%"></div>
+              <div class="srow" style="width:54%"></div>
+              <div class="srow" style="width:68%"></div>
+              <div class="srow" style="width:44%"></div>
+            </div>
+            <div class="main">
+              <h2 data-layout-allow-overlap data-layout-allow-occlusion>Шесть источников</h2>
+              <div class="grid">
+                <div class="card"><div class="sq b"></div><div class="ct" data-layout-allow-overlap data-layout-allow-occlusion>Брифы</div>
+                  <div class="ph" style="width:80%"></div><div class="ph" style="width:60%"></div></div>
+                <div class="card"><div class="sq"></div><div class="ct" data-layout-allow-overlap data-layout-allow-occlusion>Сценарии</div>
+                  <div class="ph" style="width:70%"></div><div class="ph" style="width:52%"></div></div>
+                <div class="card"><div class="sq"></div><div class="ct" data-layout-allow-overlap data-layout-allow-occlusion>Гайд</div>
+                  <div class="ph" style="width:86%"></div><div class="ph" style="width:64%"></div></div>
+                <div class="card"><div class="sq"></div><div class="ct" data-layout-allow-overlap data-layout-allow-occlusion>Роли</div>
+                  <div class="ph" style="width:64%"></div><div class="ph" style="width:78%"></div></div>
+                <div class="card"><div class="sq"></div><div class="ct" data-layout-allow-overlap data-layout-allow-occlusion>Термины</div>
+                  <div class="ph" style="width:74%"></div><div class="ph" style="width:56%"></div></div>
+                <div class="card"><div class="sq"></div><div class="ct" data-layout-allow-overlap data-layout-allow-occlusion>Архив</div>
+                  <div class="ph" style="width:58%"></div><div class="ph" style="width:82%"></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- [4] подпись -->
+      <div id="caption" class="clip" data-start="4.28" data-duration="1.72" data-track-index="6"
+           data-layout-allow-overlap><span class="w">Среда</span><span class="w">—</span><span class="w">это</span><span class="w">то,</span><span class="w">что</span><span class="w">модель</span><span class="w">видит</span><span class="w">до</span><span class="w">первого</span><span class="w">твоего</span><span class="w">слова.</span></div>
+    </div>
+
+    <script>
+      const tl = gsap.timeline({ paused: true });
+
+      /* ---------- начальные состояния (немедленно) ---------- */
+      gsap.set("#w1", { rotationY: 8, rotationX: 3, z: 0, x: 0, y: 0, scale: 1, filter: "blur(0px)" });
+      gsap.set("#mk1, #mk2", { scaleX: 0 });
+      gsap.set("#caption .w", { opacity: 0, y: 6, filter: "blur(8px)" });
+      gsap.set("#mark", { opacity: 0 });
+
+      const L1 = document.getElementById("rb1").getTotalLength();
+      const L2 = document.getElementById("rb2").getTotalLength();
+      gsap.set("#rb1", { strokeDasharray: (L1 * 0.52) + " " + (L1 * 0.48), strokeDashoffset: 0 });
+      gsap.set("#rb2", { strokeDasharray: (L2 * 0.40) + " " + (L2 * 0.60), strokeDashoffset: 0 });
+
+      /* ---------- лента света: постоянный поток ---------- */
+      tl.to("#rb1", { strokeDashoffset: -L1, duration: 6, ease: "none" }, 0);
+      tl.to("#rb2", { strokeDashoffset: -L2 * 1.4, duration: 6, ease: "none" }, 0);
+
+      /* ---------- марка ---------- */
+      tl.to("#mark", { opacity: 1, duration: 0.5, ease: "power2.out" }, 0.25);
+
+      /* ---------- окно 1: push-in + маркер ---------- */
+      tl.to("#w1", { scale: 1.03, duration: 1.8, ease: "none" }, 0);
+      tl.to("#mk1", { scaleX: 1, duration: 0.4, ease: "power2.inOut" }, 0.85);
+
+      /* ---------- своп 1 ---------- */
+      tl.to("#w1", {
+        x: -980, y: -700, z: -460, rotationY: 20,
+        filter: "blur(20px)", duration: 0.8, ease: "power3.in"
+      }, 1.8);
+
+      tl.fromTo("#w2",
+        { x: 980, y: 700, z: -460, rotationY: -12, rotationX: 3, scale: 0.98, filter: "blur(20px)" },
+        { x: 0, y: 0, z: 0, rotationY: 8, rotationX: 3, scale: 1, filter: "blur(0px)",
+          duration: 0.8, ease: "power3.out", immediateRender: false }, 2.0);
+
+      /* ---------- окно 2: push-in + маркер ---------- */
+      tl.to("#w2", { scale: 1.03, duration: 1.2, ease: "none" }, 2.8);
+      tl.to("#mk2", { scaleX: 1, duration: 0.4, ease: "power2.inOut" }, 3.05);
+
+      /* ---------- своп 2 ---------- */
+      tl.to("#w2", {
+        x: -980, y: -700, z: -460, rotationY: 20,
+        filter: "blur(20px)", duration: 0.8, ease: "power3.in"
+      }, 4.0);
+
+      tl.fromTo("#w3",
+        { x: 980, y: 700, z: -460, rotationY: -12, rotationX: 3, scale: 0.98, filter: "blur(20px)" },
+        { x: 0, y: 0, z: 0, rotationY: 8, rotationX: 3, scale: 1, filter: "blur(0px)",
+          duration: 0.8, ease: "power3.out", immediateRender: false }, 4.2);
+
+      tl.to("#w3", { scale: 1.03, duration: 1.0, ease: "none" }, 5.0);
+
+      /* ---------- подпись ---------- */
+      tl.to("#caption .w", {
+        opacity: 1, y: 0, filter: "blur(0px)",
+        duration: 0.30, stagger: 0.038, ease: "power2.out"
+      }, 4.32);
+
+      window.__timelines = window.__timelines || {};
+      window.__timelines["main"] = tl;
+    </script>
+  </body>
+</html>

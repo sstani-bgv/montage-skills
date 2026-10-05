@@ -1,0 +1,302 @@
+<!doctype html>
+<html lang="ru" data-resolution="landscape">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920, height=1080" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <link rel="stylesheet" href="./assets/tokens.css" />
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body {
+        width: 1920px; height: 1080px; overflow: hidden;
+        background: var(--paper);
+      }
+      body { font-family: var(--font-body); color: var(--ink); }
+
+      /* ---------- [0] фон ---------- */
+      #bg { background: var(--paper); }
+      #bg::before {
+        content: ""; position: absolute; left: -140px; top: -180px;
+        width: 1180px; height: 1180px; border-radius: 50%;
+        background: radial-gradient(circle at 50% 50%, var(--blue-100) 0%, rgba(232,236,253,0) 68%);
+      }
+      #bg::after {
+        content: ""; position: absolute; right: -220px; bottom: -300px;
+        width: 980px; height: 980px; border-radius: 50%;
+        background: radial-gradient(circle at 50% 50%, var(--blue-100) 0%, rgba(232,236,253,0) 70%);
+      }
+
+      /* ---------- [1] карточка промпта ---------- */
+      #card {
+        background: var(--surface); border-radius: var(--r-lg);
+        box-shadow: var(--shadow); border: 1px solid var(--line);
+        padding: 48px 52px; display: flex; flex-direction: column; gap: 28px;
+      }
+      #card .code {
+        background: var(--surface-2); border-radius: var(--r-sm);
+        padding: 26px 28px; display: flex; flex-direction: column; gap: 12px;
+      }
+      #card .code .ln {
+        font-size: 24px; font-weight: 400; letter-spacing: -0.005em;
+        line-height: 1.45; color: var(--ink);
+      }
+      #card .code .ln.dim { color: var(--muted); }
+      #card .caret {
+        display: inline-block; width: 12px; height: 26px; vertical-align: -4px;
+        background: var(--blue); border-radius: 2px; margin-left: 6px;
+      }
+
+      /* ---------- [2] панель списка ---------- */
+      #panel {
+        background: var(--blue-100); border-radius: var(--r-xl);
+        border: 1px solid rgba(46, 88, 234, 0.16);
+        box-shadow: 0 18px 48px rgba(20, 22, 26, 0.10);
+        padding: 64px; display: flex; flex-direction: column; gap: 38px;
+      }
+      .prow {
+        height: 176px; background: var(--surface); border: 1px solid var(--line);
+        border-radius: var(--r-chip); padding: 0 48px;
+        display: flex; align-items: center; gap: 36px;
+      }
+      .pnum {
+        font-family: var(--font-display); font-weight: 700; font-size: 96px;
+        line-height: 1; letter-spacing: -0.03em; color: var(--blue);
+        display: block; width: 100px; flex: none;
+      }
+      .ptxt {
+        font-family: var(--font-body); font-weight: 500; font-size: 34px;
+        letter-spacing: -0.015em; color: var(--ink);
+      }
+
+      /* ---------- [3] PiP — медиа-слот ---------- */
+      #pip-window {
+        position: absolute; inset: 0; overflow: hidden;
+        background: var(--surface);
+        clip-path: inset(25% 0% 25% 0% round 50px);
+      }
+      #pip-inner {
+        position: absolute; left: -720px; top: -660px;
+        width: 2400px; height: 2400px;
+        display: flex; align-items: center; justify-content: center;
+        background-color: var(--surface);
+        background-image: repeating-linear-gradient(
+          45deg,
+          rgba(226,229,234,0) 0px, rgba(226,229,234,0) 12px,
+          var(--line) 12px, var(--line) 14px
+        );
+      }
+      /* метка медиа-слота (компонент ДС: рамка со штриховкой + «▶ слот под видео · 16:9») */
+      #pip-slot-label {
+        display: flex; align-items: center; gap: 18px;
+        padding: 16px 34px 16px 26px; border-radius: var(--r-chip);
+        background: rgba(255, 255, 255, 0.94);
+        border: 1px solid var(--line);
+        font-size: 28px; font-weight: 500; letter-spacing: -0.005em;
+        color: var(--muted);
+      }
+      #pip-slot-label .play {
+        display: block; width: 0; height: 0; flex: none;
+        border-left: 30px solid var(--blue);
+        border-top: 18px solid transparent;
+        border-bottom: 18px solid transparent;
+      }
+      /* бейдж кадра в левом верхнем углу слота */
+      #pip-badge {
+        position: absolute; left: 0; top: 0;
+        display: flex; align-items: center; gap: 12px;
+        height: 48px; padding: 0 24px; border-radius: var(--r-chip);
+        background: var(--surface); border: 1px solid var(--line);
+        box-shadow: var(--shadow);
+        font-size: 21px; font-weight: 600; letter-spacing: -0.01em; color: var(--ink);
+        white-space: nowrap;
+      }
+      #pip-badge .dot {
+        display: block; width: 12px; height: 12px; border-radius: 50%;
+        background: var(--blue);
+      }
+
+      /* ---------- [4] рамка слота + бордер PiP + тень ---------- */
+      #pip-border-layer { filter: drop-shadow(0 10px 26px rgba(20, 22, 26, 0.16)); }
+      #pip-border-layer svg { display: block; width: 1920px; height: 1080px; }
+
+      /* ---------- [5] стеклянный нижний титр (только поверх видео) ---------- */
+      #glass {
+        background: rgba(255, 255, 255, 0.30);
+        -webkit-backdrop-filter: var(--glass-blur);
+        backdrop-filter: var(--glass-blur);
+        border: 1px solid var(--glass-line);
+        box-shadow: var(--glass-shadow);
+        border-radius: var(--r-xl);
+        padding: 26px 36px; display: flex; flex-direction: column; gap: 10px;
+      }
+      #glass .name {
+        font-family: var(--font-body); font-weight: 700; font-size: 36px;
+        letter-spacing: -0.02em; color: var(--ink); line-height: 1.1;
+      }
+      #glass .role {
+        font-family: var(--font-body); font-weight: 700; font-size: 16px;
+        letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted);
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-duration="4"
+         data-width="1920" data-height="1080">
+      <div id="stage" style="position:absolute; left:0; top:0; width:1920px; height:1080px">
+
+        <!-- [0] фон -->
+        <div id="bg" class="clip" data-start="0" data-duration="4" data-track-index="0"
+             style="position:absolute; left:0; top:0; width:1920px; height:1080px"></div>
+
+        <!-- [1] уходящая карточка промпта -->
+        <div id="card" class="clip" data-start="0" data-duration="4" data-track-index="1" data-layout-allow-occlusion
+             style="position:absolute; left:520px; top:400px; width:880px; height:280px">
+          <div class="t-kicker" style="color:var(--blue)">Промпт</div>
+          <div class="code">
+            <div class="ln">Разбери мою сессию с Claude Code</div>
+            <div class="ln dim">и предложи, что дописать в память проекта<span class="caret"></span></div>
+          </div>
+        </div>
+
+        <!-- [2] панель списка справа -->
+        <div id="panel" class="clip" data-start="0.15" data-duration="3.85" data-track-index="2" data-layout-allow-overflow
+             style="position:absolute; left:1032px; top:140px; width:816px; height:800px">
+          <div class="t-kicker" style="color:var(--blue)">Что получим</div>
+          <div class="prow"><span class="pnum">1</span><span class="ptxt">/session-analysis</span></div>
+          <div class="prow"><span class="pnum">2</span><span class="ptxt">/improve-memory</span></div>
+          <div class="prow"><span class="pnum">3</span><span class="ptxt">/send-results</span></div>
+        </div>
+
+        <!-- [3] PiP-контейнер -->
+        <div id="pip-frame" class="clip" data-start="0" data-duration="4" data-track-index="3"
+             style="position:absolute; left:0; top:0; width:960px; height:1080px">
+          <div id="pip-window">
+            <div id="pip-inner" data-layout-allow-overflow>
+              <div id="pip-slot-label"><span class="play"></span><span>слот под видео · 16:9</span></div>
+            </div>
+            <div id="pip-badge" data-layout-allow-overflow><span class="dot"></span><span>Камера</span></div>
+          </div>
+        </div>
+
+        <!-- [4] рамка слота (--line-2) + бордер PiP + тень -->
+        <div id="pip-border-layer" class="clip" data-start="0" data-duration="4" data-track-index="4"
+             style="position:absolute; left:0; top:0; width:1920px; height:1080px">
+          <svg viewBox="0 0 1920 1080" xmlns="http://www.w3.org/2000/svg">
+            <rect id="pip-slotline" x="1502.4" y="71.8" width="345.6" height="194.4"
+                  rx="18" ry="18" fill="none" stroke="#cfd4dc" stroke-width="2" opacity="0" />
+            <rect id="pip-border" x="1502.4" y="71.8" width="345.6" height="194.4"
+                  rx="18" ry="18" fill="none" stroke="#2e58ea" stroke-width="3" />
+          </svg>
+        </div>
+
+        <!-- [5] стеклянный нижний титр поверх «видео» -->
+        <div id="glass" class="clip" data-start="1.1" data-duration="2.9" data-track-index="5"
+             style="position:absolute; left:72px; top:836px; width:620px; height:148px">
+          <div class="name">Имя Фамилия</div>
+          <div class="role">Тема канала</div>
+        </div>
+
+      </div>
+    </div>
+
+    <script>
+      // ---- геометрия (посчитана один раз, никаких измерений DOM во время твинов) ----
+      var S0 = 0.36;                 // стартовый масштаб PiP: 345.6 / 960 (18% ширины кадра)
+      var TX_PCT = 124.5;            // 1195.2px / 960px  — сдвиг вправо в старте
+      var TY_PCT = -34.3333;         // -370.8px / 1080px — сдвиг вверх в старте
+      var DX = 1195.2, DY = -370.8;
+      var R0 = 50;                   // локальный радиус: 50 * 0.36 = 18px на экране
+
+      var frame = document.getElementById("pip-frame");
+      var win = document.getElementById("pip-window");
+      var inner = document.getElementById("pip-inner");
+      var badge = document.getElementById("pip-badge");
+      var slotLabel = document.getElementById("pip-slot-label");
+      var rect = document.getElementById("pip-border");
+      var slotRect = document.getElementById("pip-slotline");
+
+      // прокси-состояния: геометрия, «жизнь» бордера и проявление слота — независимы
+      var pip = { p: 0 };
+      var bd = { w: 3, o: 1 };
+      var sl = { o: 0 };
+
+      function applyPip() {
+        var p = pip.p;
+        var s = S0 + (1 - S0) * p;
+        var insetPct = 25 * (1 - p);
+        var rad = R0 * (1 - p);
+
+        gsap.set(frame, { scale: s, xPercent: TX_PCT * (1 - p), yPercent: TY_PCT * (1 - p) });
+        win.style.clipPath = "inset(" + insetPct + "% 0% " + insetPct + "% 0% round " + rad + "px)";
+        // вложенный слой с ОБРАТНЫМ scale — кадрирование не «плывёт»
+        gsap.set(inner, { scale: 1 / s });
+
+        // бейдж прижат к левому верхнему углу ВИДИМОГО окна, размер на экране постоянный
+        var pad = 20 + 60 * p;   // 20 → 80: с учётом push-in бейдж не прижимается к углу кадра
+        gsap.set(badge, {
+          transformOrigin: "0 0", scale: 1 / s,
+          x: pad / s, y: 1080 * insetPct / 100 + pad / s
+        });
+
+        // рамки живут отдельным абсолютным слоем и повторяют видимое окно 1:1
+        var w = 960 * s;
+        var h = 1080 * s * (1 - insetPct / 50);
+        var cx = 480 + DX * (1 - p);
+        var cy = 540 + DY * (1 - p);
+        var x = (cx - w / 2).toFixed(2), y = (cy - h / 2).toFixed(2);
+        var ws = w.toFixed(2), hs = h.toFixed(2), rs = (rad * s).toFixed(2);
+
+        rect.setAttribute("x", x); rect.setAttribute("y", y);
+        rect.setAttribute("width", ws); rect.setAttribute("height", hs);
+        rect.setAttribute("rx", rs); rect.setAttribute("ry", rs);
+        rect.setAttribute("stroke-width", bd.w.toFixed(3));
+        rect.setAttribute("opacity", bd.o.toFixed(3));
+
+        slotRect.setAttribute("x", x); slotRect.setAttribute("y", y);
+        slotRect.setAttribute("width", ws); slotRect.setAttribute("height", hs);
+        slotRect.setAttribute("rx", rs); slotRect.setAttribute("ry", rs);
+        slotRect.setAttribute("opacity", sl.o.toFixed(3));
+        slotLabel.style.opacity = sl.o.toFixed(3);
+      }
+
+      applyPip();
+
+      var tl = gsap.timeline({ paused: true });
+
+      // рост PiP 0 → 0.9с, power2.inOut — читается как проезд камеры
+      tl.to(pip, { p: 1, duration: 0.9, ease: "power2.inOut", onUpdate: applyPip }, 0);
+
+      // растворение бордера 0.5 → 0.9с, power1.out (независимо от геометрии)
+      tl.to(bd, { w: 0, o: 0, duration: 0.4, ease: "power1.out", onUpdate: applyPip }, 0.5);
+
+      // слот проявляется под уходящий бордер: рамка --line-2 + крупная метка
+      tl.to(sl, { o: 1, duration: 0.4, ease: "power2.out", onUpdate: applyPip }, 0.6);
+
+      // уходящая карточка: расфокус в бэкплейт (НЕ в ноль)
+      tl.fromTo("#card",
+        { filter: "blur(0px)", opacity: 1 },
+        { filter: "blur(24px)", opacity: 0.22, duration: 0.4, ease: "power2.in" }, 0);
+
+      // панель справа: въезд + проявление
+      tl.fromTo("#panel", { xPercent: 18 },
+        { xPercent: 0, duration: 0.7, ease: "power3.out" }, 0.15);
+      tl.fromTo("#panel",
+        { opacity: 0.28, filter: "blur(10px)" },
+        { opacity: 1, filter: "blur(0px)", duration: 0.7, ease: "none" }, 0.15);
+
+      // строки списка — каскад 0.15с
+      tl.fromTo("#panel .prow", { opacity: 0, y: 26 },
+        { opacity: 1, y: 0, duration: 0.5, stagger: 0.15, ease: "power3.out" }, 0.92);
+
+      // стеклянный титр — после морфа, чтобы не спорить с раскрытием
+      tl.fromTo("#glass", { opacity: 0, y: 22 },
+        { opacity: 1, y: 0, duration: 0.55, ease: "power3.out" }, 1.1);
+
+      // постоянный push-in
+      tl.fromTo("#stage", { scale: 1 }, { scale: 1.03, duration: 3.1, ease: "none" }, 0.9);
+
+      window.__timelines = window.__timelines || {};
+      window.__timelines["main"] = tl;
+    </script>
+  </body>
+</html>

@@ -1,0 +1,79 @@
+<!-- dur=19 | стрим 34:34.0–34:53.0 | «autopilot: полный режим — ставите только задачу, дальше он всё сам, по одному промпту» -->
+<style>
+.pill { top: 212px; padding: 14px 30px; font-size: 34px; gap: 14px; box-shadow: 0 2px 4px rgba(20,22,26,.05), 0 8px 20px rgba(20,22,26,.08); }
+.pill i { width: 14px; height: 14px; }
+.chip.on .lbl { color: #fff; }
+#task { left: 120px; top: 536px; padding: 14px 30px; font-size: 38px; }
+#task i { background: var(--blue); border-radius: 3px; }
+.vln { position: absolute; left: 154px; top: 612px; width: 4px; height: 40px; margin-left: -2px; border-radius: 2px; background: var(--line-2); transform-origin: 50% 0; }
+.list { position: absolute; left: 120px; top: 654px; }
+.row { display: flex; align-items: center; gap: 24px; height: 74px; font-weight: 700; font-size: 46px; letter-spacing: -.02em; color: var(--ink); white-space: nowrap; }
+.ck { position: relative; width: 60px; height: 60px; flex: none; }
+.ck .o { position: absolute; inset: 0; border-radius: 50%; border: 3px solid var(--line-2); background: var(--surface); }
+.ck svg { position: absolute; inset: 0; width: 60px; height: 60px; }
+#st { left: 560px; top: 800px; color: var(--blue-700); border-color: var(--blue); background: rgba(232, 236, 253, .94); font-size: 64px; }
+</style>
+<body>
+<div class="hero" id="hero"><div class="hero-in"><img src="./assets/hero.png" alt="" /></div></div>
+<div class="kicker"><i></i>Autopilot</div>
+<div class="chip pill" id="m1" style="left:120px"><i></i><span class="lbl">авто</span></div>
+<div class="chip pill" id="m2" style="left:318px"><i></i><span class="lbl">полуавто</span></div>
+<div class="chip pill on" id="m3" style="left:582px"><div class="chip-on"></div><i></i><span class="lbl">полный</span></div>
+<div class="h1" id="l1" style="top:306px"><span class="w">Один</span> <span class="w">промпт —</span><br><span class="w">дальше</span> <span class="w acc">сам</span></div>
+
+<div class="chip" id="task"><i></i><span class="lbl">задача</span></div>
+<div class="vln" id="vl"></div>
+<div class="list">
+  <div class="row" id="r1"><span class="ck"><span class="o"></span><svg viewBox="0 0 56 56"><circle cx="28" cy="28" r="28" fill="#2e58ea" /><path d="M16 29 L24.5 37.5 L40 20" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" /></svg></span><span>Брейншторм</span></div>
+  <div class="row" id="r2"><span class="ck"><span class="o"></span><svg viewBox="0 0 56 56"><circle cx="28" cy="28" r="28" fill="#2e58ea" /><path d="M16 29 L24.5 37.5 L40 20" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" /></svg></span><span>Спецификация</span></div>
+  <div class="row" id="r3"><span class="ck"><span class="o"></span><svg viewBox="0 0 56 56"><circle cx="28" cy="28" r="28" fill="#2e58ea" /><path d="M16 29 L24.5 37.5 L40 20" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" /></svg></span><span>Реализация</span></div>
+  <div class="row" id="r4"><span class="ck"><span class="o"></span><svg viewBox="0 0 56 56"><circle cx="28" cy="28" r="28" fill="#2e58ea" /><path d="M16 29 L24.5 37.5 L40 20" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" /></svg></span><span>Проверка</span></div>
+</div>
+<div class="stamp" id="st" data-layout-allow-overlap>1 ПРОМПТ</div>
+</body>
+<script>
+heroIn("#hero", 0.15);
+
+// режимы: «пол-автоматический» 0.2, «полный» 1.2 — полный заливается синим
+gsap.set("#m1", { opacity: 0.5, y: 10, scale: 0.92 });
+tl.to("#m1", { opacity: 1, y: 0, scale: 1, duration: 0.35, ease: "back.out(2)" }, 0);
+chipIn("#m2", 0.1, 20);
+chipIn("#m3", 0.95, 20);
+gsap.set("#m3 .chip-on", { opacity: 0 });
+gsap.set("#m3 .lbl", { color: "#14161a" });
+tl.to("#m3 .chip-on", { opacity: 1, duration: 0.25, ease: "power2.out" }, 1.05);
+tl.to("#m3 .lbl", { color: "#ffffff", duration: 0.25 }, 1.05);
+tl.to("#m3 i", { backgroundColor: "#ffffff", duration: 0.25 }, 1.05);
+tl.to(["#m1", "#m2"], { opacity: 0.55, duration: 0.3 }, 1.05);
+
+// заголовок: первое слово на кадре 0 уже читается
+gsap.set("#l1 .w", { opacity: 0, y: 36, filter: "blur(8px)" });
+gsap.set("#l1 .w:first-child", { opacity: 0.45, y: 14, filter: "blur(4px)" });
+tl.to("#l1 .w", { opacity: 1, y: 0, filter: "blur(0px)", duration: 0.5, ease: "power3.out", stagger: 0.14 }, 0.25);
+
+// «ставите ему только задачу» 5.1
+chipIn("#task", 4.85, 24);
+gsap.set("#vl", { scaleY: 0 });
+tl.to("#vl", { scaleY: 1, duration: 0.35, ease: "power2.out" }, 5.2);
+// чек-лист сразу весь, на глубине
+const depth = [0.3, 0.24, 0.19, 0.15];
+["#r1", "#r2", "#r3", "#r4"].forEach((id, i) => {
+  gsap.set(id, { opacity: 0, x: -30, filter: "blur(6px)" });
+  tl.to(id, { opacity: depth[i], x: 0, filter: "blur(2px)", duration: 0.5, ease: "expo.out" }, 5.4 + i * 0.1);
+});
+gsap.set(".ck svg", { opacity: 0, scale: 0.3, transformOrigin: "50% 50%" });
+
+
+// «брейншторминг» 9.0 · «спецификацию» 11.3 · «реализует» 13.3 · «проверяет» 14.0
+[["#r1", 8.8], ["#r2", 11.05], ["#r3", 13.05], ["#r4", 13.75]].forEach(([id, t]) => {
+  tl.to(id, { opacity: 1, filter: "blur(0px)", duration: 0.3, ease: "power2.out" }, t);
+  tl.to(`${id} .ck svg`, { opacity: 1, scale: 1, duration: 0.4, ease: "back.out(2.5)" }, t);
+  tl.fromTo(id, { x: 0 }, { keyframes: [ { x: 12, duration: 0.15, ease: "power2.out" }, { x: 0, duration: 0.4, ease: "power2.inOut" } ], immediateRender: false }, t);
+});
+
+// «по одному промпту» 17.6 — синий штамп
+gsap.set("#st", { opacity: 0, scale: 2.4, rotation: -4 });
+tl.to("#st", { keyframes: [
+    { opacity: 1, scale: 0.94, rotation: -9, duration: 0.18, ease: "power4.in" },
+    { scale: 1, rotation: -8, duration: 0.35, ease: "back.out(3)" } ] }, 17.25);
+</script>

@@ -1,0 +1,92 @@
+<!-- dur=19 | стрим 27:22.0–27:41.0 | «reasoning effort: light — мало думает, max — максимальная уверенность» -->
+<style>
+.full { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; }
+.full video { width: 100%; height: 100%; display: block; }
+.glass { position: absolute; left: 1404px; top: 588px; width: 492px; height: 456px; border-radius: 24px;
+  background: rgba(255,255,255,.90); backdrop-filter: blur(20px) saturate(170%); -webkit-backdrop-filter: blur(20px) saturate(170%);
+  border: 1px solid rgba(255,255,255,.8); box-shadow: 0 10px 30px rgba(20,22,26,.30), inset 0 1px 0 rgba(255,255,255,.75); overflow: hidden; }
+.glass .ttl { position: absolute; left: 32px; top: 26px; font-weight: 800; font-size: 40px; letter-spacing: -.025em; color: var(--ink); white-space: nowrap; }
+.glass .ttl2 { position: absolute; left: 32px; top: 78px; font-weight: 600; font-size: 26px; color: var(--muted); white-space: nowrap; }
+#hero { left: 312px; top: 186px; width: 164px; height: 164px; }
+.rail { position: absolute; left: 50px; top: 150px; width: 4px; height: 196px; margin-left: -2px; border-radius: 2px; background: var(--line-2); transform-origin: 50% 100%; }
+.tick { position: absolute; left: 50px; width: 14px; height: 14px; margin: -7px 0 0 -7px; border-radius: 3px; background: #aeb5c0; }
+.lab { position: absolute; left: 82px; height: 34px; margin-top: -17px; line-height: 34px; font-weight: 700; font-size: 28px; color: var(--muted); white-space: nowrap; }
+#mk { position: absolute; left: 50px; top: 346px; width: 28px; height: 28px; margin: -14px 0 0 -14px; border-radius: 50%;
+  background: var(--coral); border: 4px solid #fff; box-shadow: 0 2px 8px rgba(20,22,26,.35); }
+.cap { position: absolute; font-weight: 700; font-size: 26px; line-height: 34px; white-space: nowrap; }
+#cl { left: 32px; top: 390px; color: #c8322a; }
+#cm { left: 178px; top: 133px; color: var(--blue-700); }
+.foot { position: absolute; left: 32px; top: 390px; font-weight: 600; font-size: 26px; color: var(--ink); white-space: nowrap; }
+.foot b { font-weight: 800; }
+.foot .lt { color: #c8322a; }
+.foot .mx { color: var(--blue); }
+</style>
+<body>
+<div class="full"><video id="scrv" class="clip" src="./assets/clips/scr_25.mp4" data-start="0" data-duration="19" data-track-index="0" muted playsinline></video></div>
+<div class="kicker" style="display:none"></div>
+<div class="glass" id="glass">
+  <div class="hero" id="hero"><div class="hero-in"><img src="./assets/hero.png" alt="" /></div></div>
+  <div class="ttl" id="t1"><span class="w">Reasoning</span> <span class="w">effort</span></div>
+  <div class="ttl2" id="t2"><span class="w">сколько</span> <span class="w">модель</span> <span class="w">думает</span></div>
+  <div class="rail" id="rail"></div>
+  <div class="tick" style="top:150px"></div><div class="lab" id="b4" style="top:150px">Max</div>
+  <div class="tick" style="top:199px"></div><div class="lab" id="b3" style="top:199px">Extra High</div>
+  <div class="tick" style="top:248px"></div><div class="lab" id="b2" style="top:248px">High</div>
+  <div class="tick" style="top:297px"></div><div class="lab" id="b1" style="top:297px">Medium</div>
+  <div class="tick" style="top:346px"></div><div class="lab" id="b0" style="top:346px">Light</div>
+  <div id="mk"></div>
+  <div class="cap" id="cl"><span class="w">мало</span> <span class="w">думает —</span> <span class="w">не</span> <span class="w">доведёт</span></div>
+  <div class="cap" id="cm"><span class="w">—</span> <span class="w">уверенность</span> <span class="w">выше</span></div>
+  <div class="foot" id="ft" data-layout-allow-overlap><span class="w">простое →</span> <span class="w"><b class="lt">light</b> ·</span> <span class="w">сложное →</span> <span class="w"><b class="mx">max</b></span></div>
+</div>
+</body>
+<script>
+const F = (t) => Math.round(t * 30) / 30;
+// кадр 0: плашка уже въезжает — видно, что пришла графика
+gsap.set("#glass", { opacity: 0.6, y: 44, filter: "blur(4px)" });
+tl.to("#glass", { keyframes: [ { opacity: 1, y: 5, filter: "blur(0px)", duration: 0.45, ease: "expo.out" }, { y: 0, duration: 0.7, ease: "none" } ] }, 0);
+heroIn("#hero", 0.2);
+gsap.set("#t1 .w", { opacity: 0, y: 30, filter: "blur(8px)" });
+gsap.set("#t1 .w:first-child", { opacity: 0.5, y: 12, filter: "blur(3px)" });
+tl.to("#t1 .w", { opacity: 1, y: 0, filter: "blur(0px)", duration: 0.45, ease: "power3.out", stagger: 0.12 }, 0.02);
+rise("#t2 .w", 0.35, 0.1);
+
+// шкала собирается снизу вверх
+gsap.set("#rail", { scaleY: 0 });
+tl.to("#rail", { scaleY: 1, duration: 0.6, ease: "power2.out" }, 0.4);
+gsap.set(".tick", { opacity: 0, scale: 0 });
+gsap.set(".lab", { opacity: 0, x: -16 });
+const labs = ["#b0", "#b1", "#b2", "#b3", "#b4"];
+const ticks = gsap.utils.toArray(".tick").reverse();
+ticks.forEach((el, i) => tl.to(el, { opacity: 1, scale: 1, duration: 0.25, ease: "back.out(3)" }, 0.45 + i * 0.1));
+labs.forEach((s, i) => tl.to(s, { opacity: 1, x: 0, duration: 0.35, ease: "power3.out" }, 0.5 + i * 0.1));
+
+// «если поставим light» — 2.7: маркер встаёт на Light, деление коралловое
+gsap.set("#mk", { opacity: 0, scale: 0 });
+tl.to("#mk", { opacity: 1, scale: 1, duration: 0.4, ease: "back.out(2)" }, 2.4);
+tl.to("#b0", { color: "#c8322a", duration: 0.25 }, 2.4);
+
+// «мало думать» 4.3 / «не доведёт до конца» 6.5
+gsap.set("#cl .w", { opacity: 0, y: 20, filter: "blur(6px)" });
+tl.to("#cl .w", { opacity: 1, y: 0, filter: "blur(0px)", duration: 0.45, ease: "power3.out", stagger: 0.13 }, 4.05);
+
+// «экстра хай» 9.3 → «max» 10.1: маркер едет вверх, деления мигают, цвет → синий
+tl.to("#cl", { opacity: 0, x: 20, filter: "blur(6px)", duration: 0.35, ease: "power2.in" }, 8.9);
+tl.to("#b0", { color: "#61666f", duration: 0.25 }, 8.9);
+tl.to("#mk", { y: -147, duration: 0.6, ease: "power3.inOut" }, 8.9);
+tl.to("#mk", { backgroundColor: "#2e58ea", duration: 0.6 }, 8.9);
+tl.to("#mk", { y: -196, duration: 0.45, ease: "power3.inOut" }, 9.75);
+[["#b1", 9.12], ["#b2", 9.3], ["#b3", 9.45]].forEach(([s, t]) => {
+  tl.to(s, { keyframes: [ { color: "#2e58ea", scale: 1.08, duration: 0.12 }, { color: "#61666f", scale: 1, duration: 0.25 } ], transformOrigin: "0% 50%" }, t);
+});
+tl.to("#b4", { color: "#2e58ea", scale: 1.1, transformOrigin: "0% 50%", duration: 0.3, ease: "back.out(3)" }, 10.1);
+
+// «максимально уверенность» 12.2
+rise("#cm .w", 11.9, 0.14, 0.45);
+
+// «для простых задач … маленький light» 16.7
+rise("#ft .w", 16.45, 0.12, 0.4);
+
+// уход вниз-вправо, не тем же путём
+tl.to("#glass", { opacity: 0, x: 40, y: 50, filter: "blur(6px)", duration: 0.4, ease: "power2.in" }, 18.55);
+</script>

@@ -1,0 +1,63 @@
+<!-- dur=18.0 | стрим 14:29.0–14:47.0 | Свои кейсы — чтобы ИИ писал не абстрактно -->
+<style>
+.cam { position: absolute; left: 40px; top: 242px; width: 1060px; height: 596px; border-radius: 28px; overflow: hidden;
+  box-shadow: 0 2px 6px rgba(20,22,26,.08), 0 30px 70px rgba(20,22,26,.18); background: #222; }
+.cam video { width: 100%; height: 100%; object-fit: cover; display: block; }
+.panel { position: absolute; left: 1140px; top: 40px; width: 740px; height: 1000px; border-radius: 28px; background: var(--surface);
+  border: 1px solid var(--line); box-shadow: 0 2px 4px rgba(20,22,26,.05), 0 24px 60px rgba(20,22,26,.10); overflow: hidden; }
+.panel .kicker { left: 50px; top: 46px; }
+.panel .h1 { left: 50px; top: 116px; width: 660px; font-size: 92px; }
+#hero { left: 100px; top: 250px; width: 540px; height: 540px; }
+.lead { position: absolute; left: 50px; top: 272px; font-weight: 700; font-size: 38px; letter-spacing: -.02em; color: var(--muted); white-space: nowrap; }
+.panel .chip { font-size: 38px; padding: 18px 30px; }
+.chip.good { color: #ffffff; border-color: var(--blue); box-shadow: 0 10px 24px rgba(46,88,234,.35); }
+.chip.good i { background: #ffffff; position: relative; }
+.chip.good .chip-on { background: var(--blue); }
+.chip.meh { background: var(--surface-2); color: var(--muted); box-shadow: 0 2px 4px rgba(20,22,26,.05), 0 10px 24px rgba(20,22,26,.08); }
+.strike { position: absolute; left: 22px; right: 22px; top: 50%; height: 5px; margin-top: -2px; border-radius: 3px; background: #c8322a; transform-origin: 0 50%; }
+.vs { position: absolute; left: 50px; top: 566px; font-weight: 700; font-size: 34px; letter-spacing: -.01em; color: var(--muted); white-space: nowrap; }
+</style>
+<body>
+<div class="cam" id="cam"><video id="camv" class="clip" src="./assets/clips/cam_13.mp4" data-start="0" data-duration="18.0" data-track-index="0" muted playsinline></video></div>
+<div class="panel" id="panel">
+  <div class="kicker"><i></i>Настройка бота</div>
+  <div class="h1" id="l1"><span class="w">Свои</span> <span class="w acc">кейсы</span></div>
+  <div class="hero" id="hero"><div class="hero-in"><img src="./assets/hero.png" alt="" /></div></div>
+  <div class="lead" id="lead"><span class="w">В</span> <span class="w">отклике</span> <span class="w">клиенту:</span></div>
+  <div class="chip" id="c1" style="left:50px; top:330px"><i></i><span class="lbl">как вы решаете задачи</span></div>
+  <div class="chip" id="c2" style="left:50px; top:436px"><i></i><span class="lbl">ваши примеры работ</span></div>
+  <div class="vs" id="vs"><span class="w">Нейронка</span> <span class="w">тогда:</span></div>
+  <div class="chip good" id="good" style="left:50px; top:618px"><span class="chip-on"></span><i></i><span class="lbl">пишет на ваших данных</span></div>
+  <div class="chip meh" id="meh" style="left:50px; top:724px"><i></i><span class="lbl">абстрактно</span><span class="strike" id="strike"></span></div>
+</div>
+</body>
+<script>
+gsap.set("#cam", { x: 220, scale: 0.9 });
+tl.to("#cam", { x: 0, scale: 1, duration: 0.7, ease: "expo.out" }, 0);
+gsap.set("#panel", { x: 120, opacity: 0.4 });
+tl.to("#panel", { keyframes: [ { x: 10, opacity: 1, duration: 0.45, ease: "expo.out" }, { x: 0, duration: 0.7, ease: "none" } ] }, 0);
+
+// «свои cases надо обязательно описать» 870.0–871.0 → 1.0–2.0
+rise("#l1 .w", 0.0, 0.3);
+gsap.set("#l1 .w:first-child", { opacity: 0.45, filter: "blur(4px)", y: 12 });
+heroIn("#hero", 0.3);
+
+// «когда мы отвечаем клиенту» 873.5–874.6 → 4.5–5.6: папка уезжает вправо-вниз, освобождая место под список
+tl.to("#hero", { x: 214, y: 336, scale: 0.556, duration: 0.8, ease: "power3.inOut" }, 4.3);
+rise("#lead .w", 4.7, 0.12);
+
+// «как мы вообще будем его задачу решать» 876.2–877.4 → 7.2–8.4
+chipIn("#c1", 6.95, 24);
+// «какие-то свои cases прикладывать» 880.2–880.7 → 11.2–11.7
+chipIn("#c2", 10.95, 24);
+
+// «чтобы нейронка именно на ваших данных основывалась» 883.2–884.2 → 14.2–15.2
+rise("#vs .w", 13.6, 0.12);
+chipIn("#good", 14.0, 24);
+
+// «а не отвечало как-то абстрактно» 885.1–886.0 → 16.1–17.0
+chipIn("#meh", 16.2, 24);
+gsap.set("#strike", { scaleX: 0 });
+tl.to("#strike", { scaleX: 1, duration: 0.35, ease: "power2.out" }, 16.85);
+tl.to("#meh", { opacity: 0.5, duration: 0.35, ease: "power1.out" }, 17.05);
+</script>

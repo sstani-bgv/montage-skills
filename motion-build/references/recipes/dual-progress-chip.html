@@ -1,0 +1,251 @@
+<!doctype html>
+<html lang="ru" data-resolution="landscape">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920, height=1080" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <link rel="stylesheet" href="./assets/tokens.css" />
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body {
+        width: 1920px; height: 1080px; overflow: hidden;
+        background: var(--paper);
+      }
+      body { font-family: var(--font-body); color: var(--ink); }
+
+      .clip { position: absolute; inset: 0; }
+
+      /* ---------- [0] фон ---------- */
+      #bg { background: var(--paper); }
+      #bg-spot {
+        position: absolute; left: 50%; top: 52%;
+        width: 1560px; height: 940px; margin: -470px 0 0 -780px;
+        background: radial-gradient(
+          closest-side,
+          rgba(46, 88, 234, 0.075) 0%,
+          rgba(46, 88, 234, 0.03) 52%,
+          rgba(46, 88, 234, 0) 100%
+        );
+      }
+      #mark {
+        position: absolute; left: 132px; top: 92px;
+        color: var(--muted);
+      }
+
+      /* ---------- группа: подпись + чипы ---------- */
+      #group {
+        position: absolute; inset: 0;
+        display: flex; flex-direction: column;
+        align-items: center; justify-content: center;
+        gap: 54px;
+        padding-bottom: 210px;
+      }
+
+      #caption { text-align: center; }
+      .cap-line {
+        display: block;
+        font-family: var(--font-body);
+        font-weight: 800;
+        font-size: 54px;
+        line-height: 1.22;
+        letter-spacing: -0.025em;
+        color: var(--ink);
+        white-space: nowrap;
+      }
+      .w {
+        display: inline-block;
+        will-change: transform, opacity, filter;
+      }
+
+      /* ---------- чипы ---------- */
+      #chips {
+        display: flex; align-items: center; justify-content: space-between;
+        width: 1600px;
+      }
+      .chip {
+        position: relative;
+        width: 660px; height: 200px;
+        border: 1px solid var(--line-2);
+        border-radius: var(--r-chip);
+        background: var(--surface);
+        box-shadow: var(--shadow);
+        overflow: hidden;
+      }
+      .fill {
+        position: absolute; inset: 0;
+        will-change: transform;
+      }
+      #fill-l { background: var(--coral-100); }
+      #fill-r { background: var(--blue-100); }
+      .front {
+        position: absolute; left: 0; top: 0; bottom: 0;
+        width: 4px;
+        will-change: transform;
+      }
+      #front-l { background: var(--coral); }
+      #front-r { background: var(--blue); }
+      .chip-body {
+        position: absolute; inset: 0;
+        display: flex; flex-direction: column; justify-content: center;
+        padding: 0 52px; gap: 12px;
+      }
+      .chip-head {
+        display: flex; align-items: center; gap: 20px;
+      }
+      .dot { width: 20px; height: 20px; border-radius: 50%; flex: none; }
+      #chip-l .dot { background: var(--coral); }
+      #chip-r .dot { background: var(--blue); }
+      .chip-title {
+        font-family: var(--font-body);
+        font-weight: 800; font-size: 40px; line-height: 1.1;
+        letter-spacing: -0.02em; color: var(--ink);
+      }
+      .chip-sub {
+        font-family: var(--font-body);
+        font-weight: 500; font-size: 25px; line-height: 1.2;
+        letter-spacing: -0.01em; color: var(--muted);
+        padding-left: 40px;
+      }
+
+      /* ---------- [4] итог ---------- */
+      #summary-inner {
+        position: absolute; left: 0; right: 0; top: 700px;
+        text-align: center;
+        will-change: transform, opacity;
+      }
+      #summary-line {
+        display: inline-block; position: relative;
+        font-family: var(--font-body);
+        font-weight: 600; font-size: 32px; line-height: 1.3;
+        letter-spacing: -0.015em; color: var(--ink);
+      }
+      #hl {
+        position: relative;
+        display: inline-block;
+      }
+      #summary-mark {
+        position: absolute; left: -10px; right: -10px; top: -1px;
+        height: 44px;
+        background: var(--mark);
+        border-radius: 5px;
+        z-index: 0;
+        will-change: transform;
+      }
+      #hl-word { position: relative; z-index: 1; }
+      .sum-soft { color: var(--muted); font-weight: 500; }
+    </style>
+  </head>
+  <body>
+    <div
+      id="root"
+      data-composition-id="main"
+      data-start="0"
+      data-duration="5.5"
+      data-width="1920"
+      data-height="1080"
+    >
+      <!-- [0] фон -->
+      <div id="bg" class="clip" data-start="0" data-duration="5.5" data-track-index="0">
+        <div id="bg-spot"></div>
+        <div id="mark" class="t-kicker">Память модели · 06</div>
+      </div>
+
+      <!-- [1..3] чипы + подпись -->
+      <div id="scene" class="clip" data-start="0" data-duration="5.5" data-track-index="1">
+        <div id="group">
+          <div id="caption">
+            <div class="cap-line" id="l1"><span class="w">Всё,</span> <span class="w">что</span> <span class="w">модель</span> <span class="w">узнала</span> <span class="w">за</span> <span class="w">диалог,</span></div>
+            <div class="cap-line" id="l2"><span class="w">исчезает</span> <span class="w">вместе</span> <span class="w">с</span> <span class="w">ним.</span></div>
+          </div>
+
+          <div id="chips">
+            <div class="chip" id="chip-l">
+              <div class="fill" id="fill-l"></div>
+              <div class="front" id="front-l" data-layout-allow-overflow></div>
+              <div class="chip-body">
+                <div class="chip-head">
+                  <span class="dot"></span>
+                  <span class="chip-title">Короткая память</span>
+                </div>
+                <div class="chip-sub">в пределах сессии</div>
+              </div>
+            </div>
+
+            <div class="chip" id="chip-r">
+              <div class="fill" id="fill-r"></div>
+              <div class="front" id="front-r"></div>
+              <div class="chip-body">
+                <div class="chip-head">
+                  <span class="dot"></span>
+                  <span class="chip-title">Долгая память</span>
+                </div>
+                <div class="chip-sub">между сессиями</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- [4] итог -->
+      <div id="summary" class="clip" data-start="3" data-duration="2.5" data-track-index="2">
+        <div id="summary-inner">
+          <span id="summary-line"><span id="hl"><span id="summary-mark"></span><span id="hl-word">CLAUDE.md</span></span> переносит понимание <span class="sum-soft">через границу сессии.</span></span>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      (function () {
+        // ---- начальные состояния: немедленно, не через tl.set ----
+        gsap.set("#fill-l", { transformOrigin: "right center", scaleX: 1 });
+        gsap.set("#fill-r", { transformOrigin: "right center", scaleX: 0.055 });
+        gsap.set("#chip-l", { x: 0 });
+        gsap.set("#chip-r", { x: 0 });
+        gsap.set("#group", { y: 33 });
+        gsap.set(".w", { opacity: 0, y: 6, filter: "blur(8px)" });
+        // фронт заливки = левая кромка слоя: 660 * (1 - scaleX)
+        var CHIP_W = 660;
+        var FRONT_FULL = 0;                       // scaleX 1
+        var FRONT_EMPTY = CHIP_W * (1 - 0.055);   // scaleX 0.055
+        var FRONT_DRY = CHIP_W;                   // scaleX 0 — чип пуст
+        gsap.set("#front-l", { x: FRONT_FULL });
+        gsap.set("#front-r", { x: FRONT_EMPTY });
+        gsap.set("#summary-inner", { opacity: 0, y: 18 });
+        gsap.set("#summary-mark", { transformOrigin: "left center", scaleX: 0 });
+
+        var tl = gsap.timeline({ paused: true });
+
+        // ---- [A] противофазные заливки чипов, power1.inOut, 2.5 c от 0.3 ----
+        tl.to("#fill-l", { scaleX: 0, duration: 2.5, ease: "power1.inOut" }, 0.3);
+        tl.to("#fill-r", { scaleX: 1, duration: 2.5, ease: "power1.inOut" }, 0.3);
+        tl.to("#front-l", { x: FRONT_DRY, duration: 2.5, ease: "power1.inOut" }, 0.3);
+        tl.to("#front-r", { x: FRONT_FULL, duration: 2.5, ease: "power1.inOut" }, 0.3);
+
+        // ---- [B] постоянный разъезд чипов, ease none, весь кадр ----
+        tl.to("#chip-l", { x: -60, duration: 5.5, ease: "none" }, 0);
+        tl.to("#chip-r", { x: 60, duration: 5.5, ease: "none" }, 0);
+
+        // ---- [C] пословесная сборка подписи ----
+        var WORD = { opacity: 1, y: 0, filter: "blur(0px)", duration: 0.35, ease: "power2.out" };
+        var l1 = document.querySelectorAll("#l1 .w");
+        for (var i = 0; i < l1.length; i++) {
+          tl.to(l1[i], WORD, 0.4 + i * 0.15);
+        }
+        var l2 = document.querySelectorAll("#l2 .w");
+        for (var j = 0; j < l2.length; j++) {
+          tl.to(l2[j], WORD, 1.9 + j * 0.15);
+        }
+
+        // ---- рецентр блока при появлении второй строки ----
+        tl.to("#group", { y: 0, duration: 0.5, ease: "power2.inOut" }, 1.9);
+
+        // ---- [D] итог ----
+        tl.to("#summary-inner", { opacity: 1, y: 0, duration: 0.5, ease: "power2.out" }, 3.05);
+        tl.to("#summary-mark", { scaleX: 1, duration: 0.45, ease: "power2.out" }, 3.45);
+
+        window.__timelines = window.__timelines || {};
+        window.__timelines["main"] = tl;
+      })();
+    </script>
+  </body>
+</html>

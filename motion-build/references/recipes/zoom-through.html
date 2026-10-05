@@ -1,0 +1,284 @@
+<!doctype html>
+<html lang="ru" data-resolution="landscape">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920, height=1080" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <link rel="stylesheet" href="./assets/tokens.css" />
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body { width: 1920px; height: 1080px; overflow: hidden; background: var(--paper); }
+      body { font-family: var(--font-body); color: var(--ink); }
+
+      #root { position: relative; width: 1920px; height: 1080px; overflow: hidden; background: var(--paper); }
+
+      .clip { position: absolute; inset: 0; width: 1920px; height: 1080px; }
+
+      /* ---- z-порядок: фон → сцена B → конструкция → цитата → уходящая сцена A ---- */
+      #bg        { z-index: 0; }
+      #scene-b   { z-index: 1; }
+      #construct { z-index: 2; }
+      #quote     { z-index: 3; }
+      #scene-a   { z-index: 4; }
+
+      /* Плоскости сцен: собственный непрозрачный «лист», чтобы zoom-through
+         читался как пролёт сквозь материальный слой, а не как кроссфейд. */
+      .plane {
+        position: absolute; inset: 0;
+        width: 1920px; height: 1080px;
+        background: var(--paper);
+        will-change: transform, filter, opacity;
+      }
+
+      .blob {
+        position: absolute;
+        width: 1180px; height: 1180px;
+        border-radius: 50%;
+        background: radial-gradient(circle at 50% 50%, rgba(46, 88, 234, 0.10) 0%, rgba(46, 88, 234, 0.04) 42%, rgba(46, 88, 234, 0) 68%);
+      }
+      .blob-a { left: 1080px; top: -300px; }
+      .blob-b { left: -340px; top: 380px; }
+
+      /* ---------- Сцена A: три карточки-слоя ---------- */
+      .a-head   { position: absolute; left: 180px; top: 128px; width: 1400px; will-change: transform; }
+      .a-kicker { color: var(--muted); }
+      .a-title  { margin-top: 18px; color: var(--ink); }
+
+      .a-cards { position: absolute; left: 150px; top: 404px; display: flex; gap: 60px; will-change: transform; }
+      .card {
+        width: 500px; height: 436px;
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: var(--r-lg);
+        box-shadow: var(--shadow);
+        padding: 42px 44px;
+        display: flex; flex-direction: column;
+      }
+      .card-num { color: var(--muted); }
+      .card-ico { margin: 30px 0 34px; }
+      .card-name { color: var(--ink); }
+      .card-text { color: var(--muted); margin-top: 16px; line-height: 1.4; font-size: 27px; }
+
+      /* ---------- Сцена B ---------- */
+      .b-kicker { position: absolute; left: 200px; top: 150px; color: var(--muted); }
+      .b-grid {
+        position: absolute; left: 985px; top: 55px; width: 660px; height: 660px;
+        background-image:
+          linear-gradient(rgba(20,22,26,.085) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(20,22,26,.085) 1px, transparent 1px);
+        background-size: 28px 28px;
+        will-change: transform;
+        border-radius: 50%;
+        -webkit-mask-image: radial-gradient(circle at 50% 50%, #000 0%, #000 46%, rgba(0,0,0,0) 74%);
+        mask-image: radial-gradient(circle at 50% 50%, #000 0%, #000 46%, rgba(0,0,0,0) 74%);
+      }
+
+      /* ---------- Конструкция «ядро и кольца» ---------- */
+      #construct { mix-blend-mode: multiply; }
+      .construct-wrap { position: absolute; left: 1080px; top: 150px; width: 470px; height: 470px; }
+      #construct-svg { display: block; width: 470px; height: 470px; will-change: transform, filter; }
+
+      /* ---------- Цитата ---------- */
+      .quote-block { position: absolute; left: 200px; top: 626px; width: 1480px; }
+      .q-mark {
+        position: absolute; left: 196px; top: 460px;
+        font-family: var(--font-display); font-weight: 700; font-size: 176px;
+        line-height: 1; color: var(--line-2);
+      }
+      .q-line {
+        font-family: var(--font-body); font-weight: 700;
+        font-size: 68px; line-height: 1.18; letter-spacing: -0.024em; color: var(--ink);
+      }
+      .q-line .w { display: inline-block; will-change: transform, filter, opacity; }
+      .q-attr { margin-top: 36px; font-size: 28px; font-weight: 500; color: var(--muted); }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-duration="5.5"
+         data-width="1920" data-height="1080">
+
+      <!-- [0] фон -->
+      <div id="bg" class="clip" data-start="0" data-duration="5.5" data-track-index="0">
+        <div class="blob blob-b"></div>
+      </div>
+
+      <!-- [1] сцена B -->
+      <div id="scene-b" class="clip" data-start="1.6" data-duration="3.9" data-track-index="1">
+        <div class="plane" id="b-plane">
+          <div class="blob blob-b"></div>
+          <div class="blob blob-a"></div>
+          <div class="b-grid grid-paper"></div>
+          <div class="b-kicker t-kicker" id="b-kicker">Мысль дня</div>
+        </div>
+      </div>
+
+      <!-- [2] конструкция «ядро и кольца» -->
+      <div id="construct" class="clip" data-start="2.15" data-duration="3.35" data-track-index="2">
+        <div class="construct-wrap">
+          <svg id="construct-svg" viewBox="0 0 460 460" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <g stroke="#2e58ea" stroke-width="2" fill="none">
+              <circle cx="230" cy="230" r="188" opacity="0.45" />
+              <circle cx="230" cy="230" r="118" opacity="0.75" />
+              <circle cx="230" cy="230" r="48" />
+              <path d="M230 182 L230 112" />
+              <path d="M271.6 254 L332.2 289" />
+              <path d="M188.4 254 L127.8 289" />
+            </g>
+            <g stroke="#2e58ea" stroke-width="2" fill="#f6f7f9">
+              <path d="M230 24 L251 45 L230 66 L209 45 Z" />
+              <path d="M410.2 328 L431.2 349 L410.2 370 L389.2 349 Z" />
+              <path d="M49.8 328 L70.8 349 L49.8 370 L28.8 349 Z" />
+            </g>
+            <circle cx="230" cy="230" r="13" fill="#2e58ea" />
+          </svg>
+        </div>
+      </div>
+
+      <!-- [3] цитата -->
+      <div id="quote" class="clip" data-start="2.75" data-duration="2.75" data-track-index="3">
+        <div class="q-mark" id="q-mark" data-layout-ignore aria-hidden="true">«</div>
+        <div class="quote-block" id="quote-block">
+          <div class="q-line" id="q-line-1"><span class="w">Мышление</span> <span class="w">можно</span> <span class="w">отдать</span> <span class="w">на</span> <span class="w">аутсорс.</span></div>
+          <div class="q-line" id="q-line-2"><span class="w">Понимание</span> <span class="w">—</span> <span class="w">нельзя.</span></div>
+          <div class="q-attr" id="q-attr">— Андрей Карпатый</div>
+        </div>
+      </div>
+
+      <!-- [4] уходящая сцена A — выше всех -->
+      <div id="scene-a" class="clip" data-start="0" data-duration="2.4" data-track-index="4">
+        <div class="plane" id="a-plane">
+          <div class="blob blob-a"></div>
+          <div class="a-head" id="a-head">
+            <div class="a-kicker t-kicker">Архитектура задачи</div>
+            <div class="a-title t-h1">Три слоя, которые задаёт человек</div>
+          </div>
+          <div class="a-cards">
+            <div class="card">
+              <div class="card-num t-kicker">01</div>
+              <div class="card-ico">
+                <svg width="92" height="92" viewBox="0 0 72 72" fill="none" stroke="#2e58ea" stroke-width="2" aria-hidden="true">
+                  <rect x="9" y="9" width="54" height="54" rx="10" />
+                  <path d="M23 30 H49 M23 42 H41" />
+                </svg>
+              </div>
+              <div class="card-name t-h2">Спека</div>
+              <div class="card-text">Что именно должно получиться</div>
+            </div>
+            <div class="card">
+              <div class="card-num t-kicker">02</div>
+              <div class="card-ico">
+                <svg width="92" height="92" viewBox="0 0 72 72" fill="none" stroke="#2e58ea" stroke-width="2" aria-hidden="true">
+                  <circle cx="36" cy="36" r="27" />
+                  <path d="M24 37 L33 46 L49 28" />
+                </svg>
+              </div>
+              <div class="card-name t-h2">Верификатор</div>
+              <div class="card-text">Как проверить, что получилось</div>
+            </div>
+            <div class="card">
+              <div class="card-num t-kicker">03</div>
+              <div class="card-ico">
+                <svg width="92" height="92" viewBox="0 0 72 72" fill="none" stroke="#2e58ea" stroke-width="2" aria-hidden="true">
+                  <path d="M36 8 L64 36 L36 64 L8 36 Z" />
+                  <path d="M36 24 L48 36 L36 48 L24 36 Z" />
+                </svg>
+              </div>
+              <div class="card-name t-h2">Среда</div>
+              <div class="card-text">Где это можно выполнить</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      (function () {
+        var SEAM = 1.6;      // момент шва
+        var SEAM_DUR = 0.8;  // единая длительность обеих сцен в шве
+
+        var aPlane = document.getElementById("a-plane");
+        var bPlane = document.getElementById("b-plane");
+        var svg = document.getElementById("construct-svg");
+        var qWords1 = document.querySelectorAll("#q-line-1 .w");
+        var qWords2 = document.querySelectorAll("#q-line-2 .w");
+
+        // Начальные состояния — немедленным set, чтобы кадр 0 был честным.
+        gsap.set(aPlane, { scale: 1, opacity: 1, transformOrigin: "50% 50%", filter: "blur(0px) brightness(1)" });
+        // Параллакс-слои внутри сцен: центр кадра как общая точка схода.
+        gsap.set("#a-head",  { scale: 1, transformOrigin: "780px 412px" });
+        gsap.set(".a-cards", { scale: 1, transformOrigin: "810px 136px" });
+        gsap.set(".card", { opacity: 0, y: 56 });
+        gsap.set(".b-grid", { scale: 1.07, transformOrigin: "-25px 485px" });
+
+        gsap.set(bPlane, { scale: 1.08, opacity: 0, transformOrigin: "50% 50%", filter: "blur(7px)" });
+        gsap.set("#b-kicker", { opacity: 0, y: 18 });
+
+        gsap.set(svg, { scale: 0.85, opacity: 0, rotation: 0, transformOrigin: "50% 50%",
+                        filter: "drop-shadow(0 0 0px rgba(46,88,234,0))" });
+
+        gsap.set("#q-mark", { opacity: 0, scale: 0.82, transformOrigin: "0% 100%" });
+        gsap.set("#quote-block", { y: 44 });
+        gsap.set("#q-line-1 .w, #q-line-2 .w", { opacity: 0, y: 6, filter: "blur(8px)" });
+        gsap.set("#q-attr", { opacity: 0, y: 12 });
+
+        var tl = gsap.timeline({ paused: true });
+
+        /* ---------- 0.0–1.6 · Сцена A ---------- */
+        tl.to(".card", { opacity: 1, y: 0, duration: 0.62, stagger: 0.13, ease: "power3.out" }, 0.08);
+
+        // Ровный push-in, без ease — это «дыхание камеры», а не эффект.
+        tl.to(aPlane, { scale: 1.03, duration: SEAM, ease: "none" }, 0);
+
+        /* ---------- 1.6–2.4 · ZOOM-THROUGH ----------
+           Обе плоскости стартуют в одну секунду и живут ровно 0.8 с.
+           A: разгон наружу (power2.in) — скорость на выходе максимальна.
+           B: торможение внутрь (power2.out) — скорость на входе максимальна.
+           Стыкуются пиками скоростей, поэтому шов читается как пролёт. */
+        tl.to(aPlane, { scale: 1.16, duration: SEAM_DUR, ease: "power2.in" }, SEAM)
+          .to(aPlane, { opacity: 0, duration: SEAM_DUR, ease: "power1.in" }, SEAM)
+          // Расфокус идёт ПО ТОЙ ЖЕ кривой, что и разгон: слой сначала успевает
+          // заметно вырасти в резкости, и только на пике скорости уходит в пелену.
+          .to(aPlane, { filter: "blur(18px) brightness(1.06)", duration: SEAM_DUR, ease: "power1.in" }, SEAM);
+
+        // Глубина: ближний слой (карточки) улетает быстрее плоскости, дальний —
+        // медленнее. Это и превращает совпадение векторов в пролёт СКВОЗЬ слой.
+        tl.to(".a-cards", { scale: 1.13, duration: SEAM_DUR, ease: "power2.in" }, SEAM)
+          .to("#a-head",  { scale: 1.05, duration: SEAM_DUR, ease: "power2.in" }, SEAM);
+
+        tl.to(bPlane, { scale: 1, duration: SEAM_DUR, ease: "power2.out" }, SEAM)
+          .to(bPlane, { opacity: 1, duration: SEAM_DUR, ease: "power2.out" }, SEAM)
+          .to(bPlane, { filter: "blur(0px)", duration: SEAM_DUR, ease: "power2.out" }, SEAM)
+          .to(".b-grid", { scale: 1, duration: SEAM_DUR, ease: "power2.out" }, SEAM);
+
+        tl.set(aPlane, { opacity: 0 }, SEAM + SEAM_DUR);
+
+        tl.to("#b-kicker", { opacity: 1, y: 0, duration: 0.5, ease: "power2.out" }, 2.25);
+
+        /* ---------- 2.4–3.9 · конструкция «ядро и кольца» ---------- */
+        // Подъём стартует ещё внутри шва: пролёт упирается в ядро,
+        // а не приземляется на пустой лист.
+        tl.to(svg, { scale: 1, opacity: 1, rotation: 6, duration: 1.5, ease: "power2.out" }, 2.15)
+          .to(svg, { filter: "drop-shadow(0 0 34px rgba(46,88,234,0.5))", duration: 1.5, ease: "power2.out" }, 2.15);
+
+        /* ---------- 3.0–5.0 · цитата ---------- */
+        tl.to("#q-mark", { opacity: 1, scale: 1, duration: 0.5, ease: "power2.out" }, 2.75);
+
+        for (var i = 0; i < qWords1.length; i++) {
+          tl.to(qWords1[i], { opacity: 1, y: 0, filter: "blur(0px)", duration: 0.35, ease: "power2.out" }, 2.80 + i * 0.15);
+        }
+
+        // Переверстка блока под вторую строку.
+        tl.to("#quote-block", { y: 0, duration: 0.4, ease: "power2.inOut" }, 3.77);
+
+        for (var j = 0; j < qWords2.length; j++) {
+          tl.to(qWords2[j], { opacity: 1, y: 0, filter: "blur(0px)", duration: 0.35, ease: "power2.out" }, 3.90 + j * 0.15);
+        }
+
+        tl.to("#q-attr", { opacity: 1, y: 0, duration: 0.42, ease: "power2.out" }, 4.37);
+
+        window.__timelines = window.__timelines || {};
+        window.__timelines["main"] = tl;
+      })();
+    </script>
+  </body>
+</html>

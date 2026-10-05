@@ -1,0 +1,247 @@
+<!doctype html>
+<html lang="ru" data-resolution="landscape">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920, height=1080" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <link rel="stylesheet" href="./assets/tokens.css" />
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body { width: 1920px; height: 1080px; overflow: hidden; background: var(--paper); }
+      body { font-family: var(--font-body); color: var(--ink); }
+
+      /* ---- ОДИН РЕЛЬС: две сцены сложены встык, едет вся стопка ---- */
+      #rail {
+        position: absolute; left: 0; top: 0;
+        width: 1920px; height: 2160px;
+        filter: blur(0px);
+        will-change: transform, filter;
+      }
+      .scene {
+        position: absolute; left: 0;
+        width: 1920px; height: 1080px;
+        background: var(--paper);
+        overflow: hidden;
+      }
+      #sceneA { top: 0; }
+      #sceneB { top: 1080px; }
+      .stage { position: absolute; inset: 0; transform-origin: 50% 50%; }
+
+      /* ---- scene A: «Было / Стало» ---- */
+      .a-head {
+        position: absolute; left: 240px; top: 168px;
+        display: flex; align-items: center; gap: 18px;
+      }
+      .a-dot { width: 12px; height: 12px; border-radius: 50%; background: var(--blue); }
+      .a-title { position: absolute; left: 240px; top: 216px; }
+
+      .a-row {
+        position: absolute; left: 240px; top: 400px;
+        width: 1440px; display: flex; align-items: stretch;
+      }
+      .card {
+        width: 660px; height: 460px;
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: var(--r-lg);
+        box-shadow: var(--shadow);
+        padding: 40px 44px;
+        display: flex; flex-direction: column; gap: 26px;
+        background-size: 24px 24px;
+      }
+      .link {
+        width: 120px; display: flex; align-items: center; justify-content: center;
+      }
+      .link-seg { width: 120px; height: 2px; background: var(--line-2); }
+      .chip {
+        display: inline-flex; align-items: center; gap: 12px;
+        padding: 12px 26px; border-radius: var(--r-chip);
+        border: 1px solid var(--line);
+        font-family: var(--font-body); font-weight: 700; font-size: 22px;
+        letter-spacing: -0.01em; white-space: nowrap;
+      }
+      .chip .cd { width: 12px; height: 12px; border-radius: 50%; }
+      .chip-coral { background: var(--coral-100); border-color: var(--coral-100); color: var(--ink); }
+      .chip-coral .cd { background: var(--coral); }
+      .chip-blue { background: var(--blue-100); border-color: var(--blue-100); color: var(--blue); }
+      .chip-blue .cd { background: var(--blue); }
+      .chip-plain { background: var(--surface); color: var(--muted); }
+      .chip-plain .cd { background: var(--line-2); }
+      .card-h { font-family: var(--font-body); font-weight: 800; font-size: 38px; letter-spacing: -0.02em; }
+      .card-b { font-family: var(--font-body); font-weight: 400; font-size: 24px; line-height: 1.45; color: var(--muted); }
+      .glyphs { margin-top: auto; display: flex; gap: 18px; align-items: center; }
+      .g { width: 44px; height: 44px; border: 2px solid var(--line-2); }
+      .g-circle { border-radius: 50%; }
+      .g-diamond { transform: rotate(45deg); border-radius: 4px; }
+      .g-square { border-radius: 6px; }
+      .g-on-coral { border-color: var(--coral); }
+      .g-on-blue { border-color: var(--blue); }
+
+      /* ---- scene B: заголовок + чипы ---- */
+      .b-head { position: absolute; left: 240px; top: 296px; display: flex; align-items: center; gap: 18px; }
+      .b-rule { position: absolute; left: 240px; top: 368px; width: 1000px; height: 2px; background: var(--line); }
+      .b-art { position: absolute; left: 1300px; top: 290px; width: 500px; height: 500px; }
+      .b-title {
+        position: absolute; left: 240px; top: 426px; width: 1040px;
+        font-family: var(--font-body); font-weight: 800; font-size: 54px;
+        letter-spacing: -0.025em; line-height: 1.24;
+      }
+      .w { display: inline-block; overflow: hidden; vertical-align: bottom; padding-bottom: 6px; }
+      .wi { display: inline-block; }
+      .b-chips { position: absolute; left: 240px; top: 672px; display: flex; gap: 22px; }
+      .b-chip {
+        display: inline-flex; align-items: center; gap: 14px;
+        padding: 20px 38px; border-radius: var(--r-chip);
+        border: 1px solid var(--line); background: var(--surface);
+        font-weight: 700; font-size: 26px; letter-spacing: -0.01em;
+        box-shadow: var(--shadow); color: var(--muted);
+      }
+      .b-chip .cd { width: 14px; height: 14px; border-radius: 50%; background: var(--line-2); }
+      .b-chip.on { background: var(--blue-100); border-color: var(--blue-100); color: var(--blue); }
+      .b-chip.on .cd { background: var(--blue); }
+      .a-foot {
+        position: absolute; left: 0; right: 0; bottom: 0; height: 150px;
+        background: var(--surface-2);
+        border-top: 1px solid var(--line);
+        display: flex; align-items: center; justify-content: center; gap: 24px;
+      }
+      .a-foot-seg { width: 140px; height: 2px; background: var(--line-2); }
+      .b-lead {
+        position: absolute; left: 240px; top: 548px; width: 980px;
+        font-family: var(--font-body); font-weight: 400; font-size: 24px;
+        line-height: 1.5; color: var(--muted);
+      }
+      .b-foot {
+        position: absolute; left: 240px; top: 802px;
+        font-family: var(--font-body); font-weight: 500; font-size: 24px; color: var(--muted);
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-duration="3.6"
+         data-width="1920" data-height="1080">
+
+      <div id="rail" class="clip" data-start="0" data-duration="3.6"
+           data-track-index="1" data-layout-allow-overflow data-layout-allow-overlap>
+
+      <!-- уходящая сцена A — верхняя половина рельса -->
+      <div id="sceneA" class="scene">
+        <div id="stageA" class="stage" data-layout-allow-overflow>
+          <div class="a-head">
+            <div class="a-dot"></div>
+            <div class="t-kicker" style="color:var(--blue)">Схема · было / стало</div>
+          </div>
+          <div class="a-title t-h1">Один и тот же результат</div>
+
+          <div class="a-row">
+            <div class="card grid-paper">
+              <div><span class="chip chip-coral"><span class="cd"></span>Было · вручную</span></div>
+              <div class="card-h">Четыре часа правок</div>
+              <div class="card-b">Спеку держишь в голове, проверяешь глазами, каждый прогон начинаешь заново.</div>
+              <div class="glyphs">
+                <div class="g g-circle g-on-coral"></div>
+                <div class="g g-square"></div>
+                <div class="g g-diamond"></div>
+              </div>
+            </div>
+            <div class="link"><div class="link-seg"></div></div>
+            <div class="card grid-paper">
+              <div><span class="chip chip-blue"><span class="cd"></span>Стало · за минуту</span></div>
+              <div class="card-h">Один прогон до зелёного</div>
+              <div class="card-b">Спека записана, проверка автоматическая, среда воспроизводится один в один.</div>
+              <div class="glyphs">
+                <div class="g g-circle g-on-blue"></div>
+                <div class="g g-square g-on-blue"></div>
+                <div class="g g-diamond g-on-blue"></div>
+              </div>
+            </div>
+          </div>
+          <div class="a-foot">
+            <div class="a-foot-seg"></div>
+            <div class="t-kicker" style="color:var(--muted)">Разница — не в усердии</div>
+            <div class="a-foot-seg"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- входящая сцена B — нижняя половина рельса, встык -->
+      <div id="sceneB" class="scene">
+        <div id="stageB" class="stage" data-layout-allow-overflow>
+          <div class="b-head">
+            <div class="a-dot"></div>
+            <div class="t-kicker" style="color:var(--blue)">Вывод</div>
+          </div>
+          <div class="b-rule"></div>
+          <div class="b-title" id="bTitle" data-layout-allow-overlap><span class="w" data-layout-allow-overflow><span class="wi">Единственный</span></span> <span class="w" data-layout-allow-overflow><span class="wi">рычаг</span></span> <span class="w" data-layout-allow-overflow><span class="wi">—</span></span> <span class="w" data-layout-allow-overflow><span class="wi">верификация</span></span></div>
+          <div class="b-lead" data-layout-allow-overlap>Спека, верификатор и воспроизводимая среда — три вещи, которые двигают результат. Остальное настраивается один раз.</div>
+          <div class="b-chips">
+            <div class="b-chip"><span class="cd"></span>Спека</div>
+            <div class="b-chip"><span class="cd"></span>Верификатор</div>
+            <div class="b-chip on"><span class="cd"></span>Среда</div>
+          </div>
+          <div class="b-foot">Остальное — следствие.</div>
+          <svg class="b-art" viewBox="0 0 500 500" fill="none" aria-hidden="true">
+            <line x1="250" y1="250" x2="250" y2="83"  stroke="#61666f" stroke-width="2"/>
+            <line x1="250" y1="250" x2="394" y2="333" stroke="#61666f" stroke-width="2"/>
+            <line x1="250" y1="250" x2="106" y2="333" stroke="#61666f" stroke-width="2"/>
+            <circle cx="250" cy="250" r="102" stroke="#2e58ea" stroke-width="2"/>
+            <circle cx="250" cy="250" r="52"  stroke="#2e58ea" stroke-width="2"/>
+            <circle cx="250" cy="83"  r="40"  stroke="#61666f" stroke-width="2"/>
+            <rect x="354" y="293" width="81" height="81" rx="10" stroke="#61666f" stroke-width="2"/>
+            <rect x="65"  y="293" width="81" height="81" rx="10" stroke="#61666f" stroke-width="2" transform="rotate(45 106 333)"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      (function () {
+        var tl = gsap.timeline({ paused: true });
+
+        var T = 1.4;    // старт шва
+        var D = 0.55;   // длительность шва — одинаковая у обоих слоёв
+        var HALF = D / 2;
+
+        // --- push-in сцены A (ease none, отдельный внутренний слой) ---
+        tl.fromTo("#stageA", { scale: 1.0 }, { scale: 1.03, duration: 1.95, ease: "none" }, 0);
+
+        // --- ШОВ: один общий рельс. Velocity match по построению —
+        // обе сцены встык внутри #rail, движется вся стопка целиком,
+        // поэтому в любой момент у них буквально одна и та же скорость.
+        // -50% от высоты рельса (2160px) = ровно одна сцена (1080px).
+        tl.fromTo("#rail",
+          { yPercent: 0 },
+          { yPercent: -50, duration: D, ease: "power3.inOut" }, T);
+
+        // blur — один на весь рельс: смаз тоже общий. Пик ровно на T + D/2 = 1.675.
+        tl.to("#rail", {
+          keyframes: [
+            { filter: "blur(14px)", duration: HALF, ease: "power2.out" },
+            { filter: "blur(0px)",  duration: HALF, ease: "power2.in" }
+          ]
+        }, T);
+
+        // --- push-in сцены B продолжает движение камеры ---
+        tl.fromTo("#stageB", { scale: 1.0 }, { scale: 1.03, duration: 2.2, ease: "none" }, T);
+
+        // --- сборка сцены B ---
+        // заголовок собирается пословесно, успевая встать к середине шва —
+        // именно он даёт входящему слою массу в кадре максимального смаза
+        tl.fromTo("#bTitle .wi",
+          { yPercent: 115 },
+          { yPercent: 0, duration: 0.24, ease: "power3.out", stagger: 0.045 }, 1.40);
+
+        tl.fromTo(".b-chips .b-chip",
+          { opacity: 0, y: 26 },
+          { opacity: 1, y: 0, duration: 0.45, ease: "power3.out", stagger: 0.11 }, 1.95);
+
+        tl.fromTo(".b-foot",
+          { opacity: 0 },
+          { opacity: 1, duration: 0.4, ease: "power2.out" }, 2.55);
+
+        window.__timelines = window.__timelines || {};
+        window.__timelines["main"] = tl;
+      })();
+    </script>
+  </body>
+</html>

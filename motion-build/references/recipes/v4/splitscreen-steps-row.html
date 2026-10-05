@@ -1,0 +1,82 @@
+<!-- dur=17.5 | стрим 19:02.0–19:19.5 | Путь заказа: свежие заказы → название и описание → фильтр 1 (ключевые слова) → фильтр 2 (нейронка) -->
+<style>
+.scr { position: absolute; left: 50px; top: 70px; width: 1200px; height: 675px; border-radius: 22px; overflow: hidden;
+  box-shadow: 0 2px 6px rgba(20,22,26,.08), 0 30px 70px rgba(20,22,26,.18); background: #111; }
+.scr video { width: 100%; height: 100%; object-fit: cover; display: block; }
+.panel { position: absolute; left: 1290px; top: 70px; width: 580px; height: 940px; border-radius: 28px; background: var(--surface);
+  border: 1px solid var(--line); box-shadow: 0 2px 4px rgba(20,22,26,.05), 0 24px 60px rgba(20,22,26,.10); overflow: hidden; }
+.panel .kicker { left: 44px; top: 44px; }
+.panel .h1 { left: 44px; top: 124px; width: 510px; font-size: 88px; line-height: 1.06; }
+#hero { left: 40px; top: 350px; width: 500px; height: 560px; }
+/* конвейер шагов под экраном: карточки по контенту, отрезки тянутся */
+.row { position: absolute; left: 50px; top: 796px; width: 1200px; display: flex; align-items: center; }
+.stp { position: relative; flex: none; display: flex; flex-direction: column; gap: 8px; padding: 20px 20px 22px 18px; border-radius: 22px;
+  background: var(--surface); border: 1px solid var(--line); box-shadow: 0 2px 4px rgba(20,22,26,.06), 0 14px 34px rgba(20,22,26,.12); }
+.stp .ring { position: absolute; inset: -2px; border-radius: 23px; box-shadow: inset 0 0 0 3px var(--blue), 0 14px 36px rgba(46,88,234,.28); opacity: 0; }
+.stp .hd { position: relative; display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 40px; letter-spacing: -.02em; color: var(--ink); white-space: nowrap; }
+.stp .ds { position: relative; font-weight: 600; font-size: 30px; letter-spacing: -.015em; color: var(--muted); white-space: nowrap; }
+.n { position: relative; width: 48px; height: 48px; border-radius: 50%; flex: none; border: 2px solid var(--line-2); background: var(--surface); }
+.n b, .n s { position: absolute; inset: 0; display: grid; place-items: center; font-size: 23px; font-weight: 800; text-decoration: none; }
+.n b { color: var(--muted); }
+.n s { color: var(--blue); opacity: 0; }
+.lnk { position: relative; flex: 1 1 0; min-width: 24px; height: 3px; background: var(--line-2); }
+.lnk i { position: absolute; right: -2px; top: -5px; width: 13px; height: 13px; border-radius: 3px; background: var(--blue); display: block; }
+</style>
+<body>
+<div class="scr" id="scr"><video id="scrv" class="clip" src="./assets/clips/scr_17.mp4" data-start="0" data-duration="17.5" data-track-index="0" muted playsinline></video></div>
+<div class="row" id="row">
+  <div class="stp" id="s1"><span class="ring"></span><div class="hd"><span class="n"><b>1</b><s>✓</s></span>Заказы</div><div class="ds">раз в 20 минут</div></div>
+  <div class="lnk" id="k1"><i></i></div>
+  <div class="stp" id="s2"><span class="ring"></span><div class="hd"><span class="n"><b>2</b><s>✓</s></span>Поля</div><div class="ds">название, описание</div></div>
+  <div class="lnk" id="k2"><i></i></div>
+  <div class="stp" id="s3"><span class="ring"></span><div class="hd"><span class="n"><b>3</b><s>✓</s></span>Фильтр 1</div><div class="ds">ключевые слова</div></div>
+  <div class="lnk" id="k3"><i></i></div>
+  <div class="stp" id="s4"><span class="ring"></span><div class="hd"><span class="n"><b>4</b><s>✓</s></span>Фильтр 2</div><div class="ds">нейронка</div></div>
+</div>
+<div class="panel" id="panel">
+  <div class="kicker"><i></i>Как работает бот</div>
+  <div class="h1" id="l1"><span class="w">Путь</span><br><span class="w acc">заказа</span></div>
+  <div class="hero" id="hero"><div class="hero-in"><img src="./assets/hero.png" alt="" /></div></div>
+</div>
+</body>
+<script>
+gsap.set("#scr", { transformOrigin: "0 0", x: -50, y: -70, scale: 1.6 });
+tl.to("#scr", { x: 0, y: 0, scale: 1, duration: 0.8, ease: "power3.inOut" }, 0);
+gsap.set("#panel", { x: 640 });
+tl.to("#panel", { keyframes: [ { x: 10, duration: 0.55, ease: "expo.out" }, { x: 0, duration: 0.6, ease: "none" } ] }, 0.25);
+heroIn("#hero", 0.5);
+rise("#l1 .w", 0.4, 0.16);
+
+// 1 сказан до сцены · «описание названия» 4.36 · «фильтруем с помощью вот этого» 8.8–10.1 · «фильтруем ещё раз» 14.1
+const at = [0.35, 4.05, 9.8, 14.6];
+const ids = ["#s1", "#s2", "#s3", "#s4"];
+const fr = (t) => Math.round(t * 30) / 30;
+ids.forEach((id, i) => {
+  chipIn(id, at[i], 30);
+  tl.set(`${id} .n`, { backgroundColor: "#2e58ea", borderColor: "#2e58ea" }, fr(at[i]));
+  tl.set(`${id} .n b`, { color: "#ffffff" }, fr(at[i]));
+  // активный шаг — синее кольцо; держание «дышит» медленно
+  tl.to(`${id} .ring`, { opacity: 1, duration: 0.3, ease: "power2.out" }, at[i] + 0.1);
+  const end = i < 3 ? at[i + 1] : DUR - 0.6;
+  const hold = end - at[i] - 0.4;
+  if (hold > 2) tl.to(`${id} .ring`, { opacity: 0.55, duration: hold / 2, ease: "sine.inOut", yoyo: true, repeat: 1 }, at[i] + 0.4);
+  if (i < 3) {
+    tl.to(`${id} .ring`, { opacity: 0, duration: 0.25 }, at[i + 1]);
+    tl.set(`${id} .n`, { backgroundColor: "#ffffff" }, fr(at[i + 1]));
+    tl.set(`${id} .n b`, { opacity: 0 }, fr(at[i + 1]));
+    tl.set(`${id} .n s`, { opacity: 1 }, fr(at[i + 1]));
+  }
+});
+["#k1", "#k2", "#k3"].forEach((id, i) => {
+  gsap.set(id, { scaleX: 0, transformOrigin: "0 50%" });
+  tl.to(id, { scaleX: 1, duration: 0.3, ease: "power2.out" }, at[i + 1] - 0.25);
+});
+
+// выход: экран разворачивается ровно в полный кадр (поправка на наезд #stage → 1.035)
+const S = 1.035, L = 960 - 960 / S, T = 540 - 540 / S;
+const tx = DUR - 0.6;
+tl.set("#scr", { zIndex: 5 }, Math.round(tx * 30) / 30);  // разворачивающийся экран накрывает панель и ряд
+tl.to("#scr", { x: L - 50, y: T - 70, scale: 1.6 / S, borderRadius: 0, duration: 0.6, ease: "power3.inOut" }, tx);
+tl.to("#panel", { x: 700, duration: 0.5, ease: "power3.in" }, tx);
+tl.to("#row", { y: 330, duration: 0.5, ease: "power3.in" }, tx);
+</script>
